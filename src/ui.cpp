@@ -113,7 +113,7 @@ void initUI() {
     btnOptHints = sf::Text(getCheckbox(optHints) + sf::String(L"Podpowiedź (Kl. H)  "), font, 18);         btnOptHints.setPosition(rightColX, 320.0f);
 
     // Lista skórek idealnie pod opcjami z prawej strony
-    btnSkinSelect = sf::Text(L"  Skórka: Classic \u25BC  ", font, 20); btnSkinSelect.setPosition(rightColX, 370.0f);
+    btnSkinSelect = sf::Text(L"  Skórka: Classic V  ", font, 20); btnSkinSelect.setPosition(rightColX, 370.0f);
     
     msgEnd = sf::Text("", font, 20); 
     txtTimer = sf::Text("", font, 20);
@@ -124,7 +124,7 @@ void initUI() {
 
     dropRestart = sf::Text(L"  Restart  ", font, 18);   
     dropUndo = sf::Text(L"  -> Cofnij Ruch  ", font, 18);
-    dropSkin = sf::Text(L"  Zmień Skórkę \u25BA  ", font, 18); 
+    dropSkin = sf::Text(L"  Zmień Skórkę >  ", font, 18); 
     dropFullscreen = sf::Text(L"  Pełny Ekran (F11)  ", font, 18); 
     dropMenu = sf::Text(L"  Wróć do Menu  ", font, 18); 
     dropQuit = sf::Text(L"  Wyjdź z Gry  ", font, 18); 
@@ -152,7 +152,7 @@ void updateUI(sf::Vector2f mousePos, float offsetX) {
     sf::String skinName = L"Classic";
     if (activeSkin == "modern") skinName = L"Modern";
     else if (activeSkin == "green") skinName = L"Green";
-    btnSkinSelect.setString(L"  Skórka: " + skinName + L" \u25BC  ");
+    btnSkinSelect.setString(L"  Skórka: " + skinName + L" V  ");
 
     if (currentState == GameState::Menu) {
         // Pozycjonowanie listy w Menu Głównym na sztywno obok

@@ -19,12 +19,12 @@ int prevFlagsPlaced = 0;
 GameState currentState = GameState::Menu;
 std::string activeSkin = "classic"; 
 
-bool optOpeningMove = false;
-bool optQuestionMarks = false;
-bool optChording = false;
+bool optOpeningMove = true;
+bool optQuestionMarks = true;
+bool optChording = true;
 bool optOpenRemaining = false;
 bool optUndo = false;
-bool optHints = false;
+bool optHints = true;
 
 int selectedDifficulty = 0; 
 std::string strCustomCols = "10";
