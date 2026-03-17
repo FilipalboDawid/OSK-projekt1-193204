@@ -26,7 +26,7 @@ bool loadTextures(const std::string& skinName) {
 
 void loadLeaderboard() {
     for (int i = 0; i < 4; ++i) leaderboards[i].clear();
-    std::ifstream file("leaderboard.txt");
+    std::ifstream file("assets/leaderboard.txt");
     if (file.is_open()) {
         int diff, time; std::string name;
         while (file >> diff >> time >> name) {
@@ -42,7 +42,7 @@ void loadLeaderboard() {
 }
 
 void saveLeaderboard() {
-    std::ofstream file("leaderboard.txt");
+    std::ofstream file("assets/leaderboard.txt");
     if (file.is_open()) {
         for (int i = 0; i < 4; ++i) {
             int limit = std::min((int)leaderboards[i].size(), 10);
