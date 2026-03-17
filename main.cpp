@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <optional>
 #include <random>
 #include <algorithm>
 
@@ -114,11 +113,10 @@ void revealAllMines() {
 }
 
 void applyWindowSize(sf::RenderWindow& window, unsigned int w, unsigned int h) {
-    window.setSize({w, h});
-    window.setView(sf::View(sf::FloatRect({0.0f, 0.0f}, {static_cast<float>(w), static_cast<float>(h)})));
+    window.setSize(sf::Vector2u(w, h));
+    window.setView(sf::View(sf::FloatRect(0.0f, 0.0f, static_cast<float>(w), static_cast<float>(h))));
 }
 
-// Funkcja pomocnicza do zapętlania skórek
 void cycleSkin() {
     if (activeSkin == "classic") activeSkin = "modern";
     else if (activeSkin == "modern") activeSkin = "green";
@@ -127,34 +125,33 @@ void cycleSkin() {
 }
 
 int main() {
-    // Delikatnie poszerzone okno menu, żeby zmieścić 3 przyciski skórek
-    sf::RenderWindow window(sf::VideoMode({650, 350}), "Minesweeper C++");
+    sf::RenderWindow window(sf::VideoMode(650, 350), "Minesweeper C++");
     window.setFramerateLimit(60);
 
-    if (!font.openFromFile("C:/Windows/Fonts/arial.ttf")) {
-        font.openFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+    // Próba załadowania systemowej czcionki w zależności od systemu (Linux / Windows)
+    if (!font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")) {
+        font.loadFromFile("C:/Windows/Fonts/arial.ttf");
     }
 
     loadTextures(activeSkin);
 
-    sf::Text titleMenu(font, "USTAWIENIA GRY", 30); titleMenu.setPosition({20.0f, 20.0f});
+    sf::Text titleMenu("USTAWIENIA GRY", font, 30); titleMenu.setPosition(20.0f, 20.0f);
 
-    sf::Text btnEasy(font, "[ Latwy (9x9) ]", 20);      btnEasy.setPosition({20.0f, 80.0f});
-    sf::Text btnMedium(font, "[ Sredni (16x16) ]", 20); btnMedium.setPosition({200.0f, 80.0f});
-    sf::Text btnHard(font, "[ Trudny (30x16) ]", 20);   btnHard.setPosition({420.0f, 80.0f});
+    sf::Text btnEasy("[ Latwy (9x9) ]", font, 20);      btnEasy.setPosition(20.0f, 80.0f);
+    sf::Text btnMedium("[ Sredni (16x16) ]", font, 20); btnMedium.setPosition(200.0f, 80.0f);
+    sf::Text btnHard("[ Trudny (30x16) ]", font, 20);   btnHard.setPosition(420.0f, 80.0f);
 
-    // NOWOŚĆ: Trzy oddzielne przyciski wyboru skórki
-    sf::Text btnSkinClassic(font, "[ Skorka: Classic ]", 20); btnSkinClassic.setPosition({20.0f, 150.0f});
-    sf::Text btnSkinModern(font, "[ Skorka: Modern ]", 20);   btnSkinModern.setPosition({220.0f, 150.0f});
-    sf::Text btnSkinGreen(font, "[ Skorka: Green ]", 20);       btnSkinGreen.setPosition({420.0f, 150.0f});
+    sf::Text btnSkinClassic("[ Skorka: Classic ]", font, 20); btnSkinClassic.setPosition(20.0f, 150.0f);
+    sf::Text btnSkinModern("[ Skorka: Modern ]", font, 20);   btnSkinModern.setPosition(220.0f, 150.0f);
+    sf::Text btnSkinGreen("[ Skorka: Green ]", font, 20);       btnSkinGreen.setPosition(420.0f, 150.0f);
 
-    sf::Text btnStart(font, ">>> START GRY <<<", 32); btnStart.setPosition({20.0f, 250.0f});
+    sf::Text btnStart(">>> START GRY <<<", font, 32); btnStart.setPosition(20.0f, 250.0f);
 
-    sf::Text btnRestart(font, "[ Restart ]", 20); btnRestart.setPosition({10.0f, 12.0f});
-    sf::Text btnMenu(font, "[ Menu ]", 20);       btnMenu.setPosition({120.0f, 12.0f});
-    sf::Text btnToggleSkin(font, "[ Zmien Skorke ]", 20); btnToggleSkin.setPosition({220.0f, 12.0f});
+    sf::Text btnRestart("[ Restart ]", font, 20); btnRestart.setPosition(10.0f, 12.0f);
+    sf::Text btnMenu("[ Menu ]", font, 20);       btnMenu.setPosition(120.0f, 12.0f);
+    sf::Text btnToggleSkin("[ Zmien Skorke ]", font, 20); btnToggleSkin.setPosition(220.0f, 12.0f);
 
-    sf::Text msgEnd(font, "", 28);
+    sf::Text msgEnd("", font, 28);
 
     auto styleButton = [](sf::Text& btn, bool isSelected, sf::Vector2f mousePos) {
         if (isSelected) btn.setFillColor(sf::Color(0, 255, 0));
@@ -164,7 +161,7 @@ int main() {
 
     while (window.isOpen()) {
         sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);
-        sf::Vector2f mousePos({static_cast<float>(mousePosInt.x), static_cast<float>(mousePosInt.y)});
+        sf::Vector2f mousePos(static_cast<float>(mousePosInt.x), static_cast<float>(mousePosInt.y));
 
         if (currentState == GameState::Menu) {
             styleButton(btnEasy, columns == 9, mousePos);
@@ -172,7 +169,7 @@ int main() {
             styleButton(btnHard, columns == 30, mousePos);
             styleButton(btnSkinClassic, activeSkin == "classic", mousePos);
             styleButton(btnSkinModern, activeSkin == "modern", mousePos);
-            styleButton(btnSkinGreen, activeSkin == "green", mousePos); // NOWOŚĆ
+            styleButton(btnSkinGreen, activeSkin == "green", mousePos);
             styleButton(btnStart, false, mousePos);
         } else {
             styleButton(btnRestart, false, mousePos);
@@ -181,11 +178,12 @@ int main() {
             styleButton(msgEnd, false, mousePos);
         }
 
-        while (const std::optional<sf::Event> event = window.pollEvent()) {
-            if (event->is<sf::Event::Closed>()) window.close();
+        sf::Event event;
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) window.close();
 
-            if (const auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
-                if (mouse->button == sf::Mouse::Button::Left) {
+            if (event.type == sf::Event::MouseButtonPressed) {
+                if (event.mouseButton.button == sf::Mouse::Left) {
                     
                     if (currentState == GameState::Menu) {
                         if (btnEasy.getGlobalBounds().contains(mousePos)) { columns = 9; rows = 9; minesCount = 10; }
@@ -193,7 +191,7 @@ int main() {
                         else if (btnHard.getGlobalBounds().contains(mousePos)) { columns = 30; rows = 16; minesCount = 99; }
                         else if (btnSkinClassic.getGlobalBounds().contains(mousePos)) { activeSkin = "classic"; loadTextures(activeSkin); }
                         else if (btnSkinModern.getGlobalBounds().contains(mousePos)) { activeSkin = "modern"; loadTextures(activeSkin); }
-                        else if (btnSkinGreen.getGlobalBounds().contains(mousePos)) { activeSkin = "green"; loadTextures(activeSkin); } // NOWOŚĆ
+                        else if (btnSkinGreen.getGlobalBounds().contains(mousePos)) { activeSkin = "green"; loadTextures(activeSkin); }
                         else if (btnStart.getGlobalBounds().contains(mousePos)) {
                             unsigned int w = std::max(450, columns * TILE_SIZE);
                             unsigned int h = rows * TILE_SIZE + TOP_UI_HEIGHT;
@@ -205,10 +203,10 @@ int main() {
                         if (btnRestart.getGlobalBounds().contains(mousePos)) initGame();
                         else if (btnMenu.getGlobalBounds().contains(mousePos)) {
                             currentState = GameState::Menu;
-                            applyWindowSize(window, 650, 350); // Powrót do szerokości menu
+                            applyWindowSize(window, 650, 350); 
                         }
                         else if (btnToggleSkin.getGlobalBounds().contains(mousePos)) {
-                            cycleSkin(); // NOWOŚĆ: Użycie nowej funkcji zapętlającej
+                            cycleSkin(); 
                         }
                         else {
                             int x = mousePosInt.x / TILE_SIZE;
@@ -230,7 +228,7 @@ int main() {
                         else if (btnToggleSkin.getGlobalBounds().contains(mousePos)) cycleSkin();
                     }
                 }
-                else if (mouse->button == sf::Mouse::Button::Right && currentState == GameState::Playing) {
+                else if (event.mouseButton.button == sf::Mouse::Right && currentState == GameState::Playing) {
                     int x = mousePosInt.x / TILE_SIZE;
                     int y = (mousePosInt.y - TOP_UI_HEIGHT) / TILE_SIZE;
                     if (isValid(x, y) && !grid[getIndex(x, y)].isRevealed) {
@@ -245,7 +243,7 @@ int main() {
         if (currentState == GameState::Menu) {
             window.draw(titleMenu);
             window.draw(btnEasy); window.draw(btnMedium); window.draw(btnHard);
-            window.draw(btnSkinClassic); window.draw(btnSkinModern); window.draw(btnSkinGreen); // Rysowanie nowej
+            window.draw(btnSkinClassic); window.draw(btnSkinModern); window.draw(btnSkinGreen);
             window.draw(btnStart);
         } 
         else {
@@ -262,26 +260,27 @@ int main() {
                         else currentTex = &texNumbers[cell.adjacentMines - 1];
                     }
 
-                    sf::Sprite sprite(*currentTex);
-                    sprite.setPosition({static_cast<float>(x * TILE_SIZE), static_cast<float>(y * TILE_SIZE + TOP_UI_HEIGHT)});
+                    sf::Sprite sprite;
+                    sprite.setTexture(*currentTex);
+                    sprite.setPosition(static_cast<float>(x * TILE_SIZE), static_cast<float>(y * TILE_SIZE + TOP_UI_HEIGHT));
                     window.draw(sprite);
                 }
             }
 
-            sf::RectangleShape topBar({std::max(450.0f, columns * TILE_SIZE * 1.0f), TOP_UI_HEIGHT * 1.0f});
+            sf::RectangleShape topBar(sf::Vector2f(std::max(450.0f, columns * TILE_SIZE * 1.0f), TOP_UI_HEIGHT * 1.0f));
             topBar.setFillColor(sf::Color(40, 40, 40));
             window.draw(topBar);
             
             window.draw(btnRestart); window.draw(btnMenu); window.draw(btnToggleSkin);
 
             if (currentState == GameState::GameOver || currentState == GameState::Victory) {
-                sf::RectangleShape overlay({std::max(450.0f, columns * TILE_SIZE * 1.0f), 60.0f});
+                sf::RectangleShape overlay(sf::Vector2f(std::max(450.0f, columns * TILE_SIZE * 1.0f), 60.0f));
                 overlay.setFillColor(sf::Color(0, 0, 0, 200));
-                overlay.setPosition({0.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 30.0f});
+                overlay.setPosition(0.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 30.0f);
                 window.draw(overlay);
 
                 msgEnd.setString(currentState == GameState::Victory ? "WYGRANA! Kliknij by zagrac" : "PRZEGRANA! Kliknij by zagrac");
-                msgEnd.setPosition({10.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 15.0f});
+                msgEnd.setPosition(10.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 15.0f);
                 window.draw(msgEnd);
             }
         }
