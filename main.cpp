@@ -14,7 +14,7 @@ int main() {
 
     loadTextures(activeSkin);
     loadLeaderboard(); 
-    initUI(); // Inicjalizacja wszystkich obiektów tekstowych
+    initUI(); 
 
     while (window.isOpen()) {
         sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
@@ -27,15 +27,40 @@ int main() {
             elapsedTime = static_cast<int>(gameClock.getElapsedTime().asSeconds());
         }
 
-        updateUI(mousePos); // Podświetlanie przycisków myszką
+        updateUI(mousePos);
 
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
             if (event.type == sf::Event::Resized) adjustView(window);
+            
+            // Klawisz F11 globalnie
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F11) toggleFullscreen(window);
 
-            // Przechwytywanie wpisywania z klawiatury
+            // NOWOŚĆ: Klawisz H (Podpowiedź)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::H) {
+                if (currentState == GameState::Playing && optHints && !isDropdownOpen) {
+                    if (mousePos.x >= offsetX && mousePos.x < offsetX + boardWidth && mousePos.y >= TOP_UI_HEIGHT) {
+                        int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
+                        int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
+                        if (isValid(x, y) && !grid[getIndex(x, y)].isRevealed) {
+                            if (!isFirstClick) { // Podpowiedź ma sens dopiero po rozpoczęciu generacji
+                                saveState();
+                                if (grid[getIndex(x, y)].isMine) {
+                                    if (grid[getIndex(x, y)].flagState != 1) {
+                                        grid[getIndex(x, y)].flagState = 1; 
+                                        flagsPlaced++;
+                                    }
+                                } else {
+                                    revealCell(x, y);
+                                    checkVictory();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             if (event.type == sf::Event::TextEntered) {
                 if (event.text.unicode < 128) { 
                     char c = static_cast<char>(event.text.unicode);
@@ -62,7 +87,6 @@ int main() {
                 }
             }
 
-            // Obsługa kliknięć myszką
             if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
                     
@@ -74,6 +98,14 @@ int main() {
                         else if (btnExpert.getGlobalBounds().contains(mousePos)) selectedDifficulty = 2;
                         else if (btnCustom.getGlobalBounds().contains(mousePos)) selectedDifficulty = 3;
                         
+                        // Zmiana opcji toggle
+                        if (btnOptOpening.getGlobalBounds().contains(mousePos)) optOpeningMove = !optOpeningMove;
+                        if (btnOptQuestion.getGlobalBounds().contains(mousePos)) optQuestionMarks = !optQuestionMarks;
+                        if (btnOptChording.getGlobalBounds().contains(mousePos)) optChording = !optChording;
+                        if (btnOptRemaining.getGlobalBounds().contains(mousePos)) optOpenRemaining = !optOpenRemaining;
+                        if (btnOptUndo.getGlobalBounds().contains(mousePos)) optUndo = !optUndo;
+                        if (btnOptHints.getGlobalBounds().contains(mousePos)) optHints = !optHints;
+
                         if (selectedDifficulty == 3) {
                             if (valCol.getGlobalBounds().contains(mousePos)) activeInputField = 1;
                             else if (valRow.getGlobalBounds().contains(mousePos)) activeInputField = 2;
@@ -94,7 +126,7 @@ int main() {
                             unsigned int w = std::max((unsigned int)MIN_WINDOW_WIDTH, (unsigned int)(columns * TILE_SIZE)); 
                             unsigned int h = rows * TILE_SIZE + TOP_UI_HEIGHT;
                             applyWindowSize(window, w, h);
-                            initGame();
+                            initGame(); // Inicjalizuje pustą planszę
                         }
                     }
                     else if (currentState == GameState::Playing) {
@@ -104,26 +136,40 @@ int main() {
                             else if (dropFullscreen.getGlobalBounds().contains(mousePos)) toggleFullscreen(window);
                             else if (dropMenu.getGlobalBounds().contains(mousePos)) {
                                 currentState = GameState::Menu;
-                                applyWindowSize(window, 650, 550); 
+                                applyWindowSize(window, 750, 550); 
                             }
                             isDropdownOpen = false; 
                         }
                         else if (btnOptions.getGlobalBounds().contains(mousePos)) isDropdownOpen = true;
+                        // NOWOŚĆ: Kliknięcie w licznik bomb -> Otwórz Pozostałe
+                        else if (optOpenRemaining && txtMines.getGlobalBounds().contains(mousePos)) {
+                            openRemainingSafeCells();
+                        }
                         else {
                             if (mousePos.x >= offsetX && mousePos.x < offsetX + boardWidth && mousePos.y >= TOP_UI_HEIGHT) {
                                 int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
                                 int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
-                                if (isValid(x, y) && !grid[getIndex(x, y)].isFlagged) {
-                                    if (isFirstClick) {
-                                        isFirstClick = false;
-                                        gameClock.restart();
+                                if (isValid(x, y)) {
+                                    if (!grid[getIndex(x, y)].isRevealed && grid[getIndex(x, y)].flagState == 0) {
+                                        // Pierwsze kliknięcie GENERUJE BOMBY
+                                        if (isFirstClick) {
+                                            generateMines(x, y);
+                                            isFirstClick = false;
+                                            gameClock.restart();
+                                        }
+                                        saveState(); // Zapisujemy stan gry do ew. Undo
+                                        
+                                        if (grid[getIndex(x, y)].isMine) {
+                                            currentState = GameState::GameOver;
+                                            revealAllMines();
+                                        } else {
+                                            revealCell(x, y);
+                                            checkVictory();
+                                        }
                                     }
-                                    if (grid[getIndex(x, y)].isMine) {
-                                        currentState = GameState::GameOver;
-                                        revealAllMines();
-                                    } else {
-                                        revealCell(x, y);
-                                        checkVictory();
+                                    // Kliknięcie lewym w odkryte pole = Chording (Bezpieczna Okolica)
+                                    else if (grid[getIndex(x, y)].isRevealed && optChording) {
+                                        chordCell(x, y);
                                     }
                                 }
                             }
@@ -134,9 +180,10 @@ int main() {
                             if (dropRestart.getGlobalBounds().contains(mousePos)) initGame();
                             else if (dropSkin.getGlobalBounds().contains(mousePos)) cycleSkin();
                             else if (dropFullscreen.getGlobalBounds().contains(mousePos)) toggleFullscreen(window);
+                            else if (optUndo && dropUndo.getGlobalBounds().contains(mousePos)) undoState(); // COFANIE!
                             else if (dropMenu.getGlobalBounds().contains(mousePos)) {
                                 currentState = GameState::Menu;
-                                applyWindowSize(window, 650, 550);
+                                applyWindowSize(window, 750, 550);
                             }
                             isDropdownOpen = false;
                         }
@@ -146,7 +193,7 @@ int main() {
                     else if (currentState == GameState::EnterName || currentState == GameState::Leaderboard) {
                         if (btnReturnMenu.getGlobalBounds().contains(mousePos)) {
                             currentState = GameState::Menu;
-                            applyWindowSize(window, 650, 550);
+                            applyWindowSize(window, 750, 550);
                         }
                     }
                 }
@@ -155,16 +202,26 @@ int main() {
                         int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
                         int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
                         if (isValid(x, y) && !grid[getIndex(x, y)].isRevealed) {
-                            grid[getIndex(x, y)].isFlagged = !grid[getIndex(x, y)].isFlagged;
-                            if (grid[getIndex(x, y)].isFlagged) flagsPlaced++;
-                            else flagsPlaced--;
+                            int idx = getIndex(x, y);
+                            saveState(); // Do undo flagowania
+
+                            // PĘTLA FLAGOWANIA: 0 -> 1 -> 2(pytajnik) -> 0
+                            if (grid[idx].flagState == 0) {
+                                grid[idx].flagState = 1;
+                                flagsPlaced++;
+                            } else if (grid[idx].flagState == 1) {
+                                flagsPlaced--; // Odejmujemy flagę, bo zmienia się w pytajnik/nic
+                                grid[idx].flagState = optQuestionMarks ? 2 : 0;
+                            } else if (grid[idx].flagState == 2) {
+                                grid[idx].flagState = 0;
+                            }
                         }
                     }
                 }
             }
         }
 
-        renderUI(window, offsetX); // Wywołanie całego rysowania z ui.cpp!
+        renderUI(window, offsetX); 
         window.display();
     }
 

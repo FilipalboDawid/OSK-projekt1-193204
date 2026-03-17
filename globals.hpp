@@ -10,7 +10,7 @@ const int MIN_WINDOW_WIDTH = 400;
 struct Cell {
     bool isMine = false;
     bool isRevealed = false;
-    bool isFlagged = false;
+    int flagState = 0; // 0 = nic, 1 = flaga, 2 = znak zapytania
     int adjacentMines = 0;
 };
 
@@ -21,20 +21,26 @@ struct ScoreEntry {
 
 enum class GameState { Menu, Playing, GameOver, Victory, EnterName, Leaderboard };
 
-// Słowo 'extern' informuje, że zmienne te są zdefiniowane w pliku .cpp
 extern int columns, rows, minesCount, flagsPlaced, elapsedTime;
 extern bool isFirstClick, isFullscreen, isDropdownOpen;
 extern float logicalW, logicalH;
 extern sf::Clock gameClock;
 
 extern std::vector<Cell> grid;
+// Kopia planszy do funkcji "Rozbrojenia" (Cofania)
+extern std::vector<Cell> previousGrid; 
+extern int prevFlagsPlaced;
+
 extern GameState currentState;
 extern std::string activeSkin;
+
+// Opcje dodatkowe
+extern bool optOpeningMove, optQuestionMarks, optChording, optOpenRemaining, optUndo, optHints;
 
 extern int selectedDifficulty, customCols, customRows, customMines, activeInputField;
 extern std::string strCustomCols, strCustomRows, strCustomMines, playerName;
 
-extern sf::Texture texHidden, texEmpty, texMine, texFlag;
+extern sf::Texture texHidden, texEmpty, texMine, texFlag, texQuestion;
 extern sf::Texture texNumbers[8];
 extern sf::Font font;
 extern std::vector<ScoreEntry> leaderboards[4];
@@ -44,6 +50,10 @@ extern sf::Text titleMenu, btnBeginner, btnIntermediate, btnExpert, btnCustom;
 extern sf::Text lblCols, valCol, lblRows, valRow, lblMines, valMine;
 extern sf::Text btnSkinClassic, btnSkinModern, btnSkinGreen, btnStart, btnShowLeaderboard;
 extern sf::Text msgEnd, txtTimer, txtMines, btnOptions;
-extern sf::Text dropRestart, dropSkin, dropFullscreen, dropMenu;
+extern sf::Text dropRestart, dropUndo, dropSkin, dropFullscreen, dropMenu;
 extern sf::RectangleShape dropdownBg, gameBg;
 extern sf::Text txtTitle, txtSubtitle, btnReturnMenu;
+
+// Przyciski nowych opcji w Menu
+extern sf::Text lblOptionsTitle;
+extern sf::Text btnOptOpening, btnOptQuestion, btnOptChording, btnOptRemaining, btnOptUndo, btnOptHints;

@@ -13,7 +13,8 @@ bool loadTextures(const std::string& skinName) {
     if (!texHidden.loadFromFile(path + "hidden.png") ||
         !texEmpty.loadFromFile(path + "empty.png") ||
         !texMine.loadFromFile(path + "mine.png") ||
-        !texFlag.loadFromFile(path + "flag.png")) {
+        !texFlag.loadFromFile(path + "flag.png") ||
+        !texQuestion.loadFromFile(path + "question.png")) { // Ładowanie znaku zapytania!
         std::cerr << "Blad: Nie znaleziono tekstur w " << path << "\n";
         return false;
     }
@@ -27,12 +28,9 @@ void loadLeaderboard() {
     for (int i = 0; i < 4; ++i) leaderboards[i].clear();
     std::ifstream file("leaderboard.txt");
     if (file.is_open()) {
-        int diff, time;
-        std::string name;
+        int diff, time; std::string name;
         while (file >> diff >> time >> name) {
-            if (diff >= 0 && diff < 4) {
-                leaderboards[diff].push_back({name, time});
-            }
+            if (diff >= 0 && diff < 4) leaderboards[diff].push_back({name, time});
         }
         file.close();
     }
@@ -68,15 +66,11 @@ void adjustView(sf::RenderWindow& window) {
     float windowRatio = window.getSize().x / (float)window.getSize().y;
     float viewRatio = logicalW / logicalH;
     float sizeX = 1.0f, sizeY = 1.0f, posX = 0.0f, posY = 0.0f;
-
     if (windowRatio >= viewRatio) {
-        sizeX = viewRatio / windowRatio;
-        posX = (1.0f - sizeX) / 2.0f;
+        sizeX = viewRatio / windowRatio; posX = (1.0f - sizeX) / 2.0f;
     } else {
-        sizeY = windowRatio / viewRatio;
-        posY = (1.0f - sizeY) / 2.0f;
+        sizeY = windowRatio / viewRatio; posY = (1.0f - sizeY) / 2.0f;
     }
-
     sf::View view(sf::FloatRect(0.0f, 0.0f, logicalW, logicalH));
     view.setViewport(sf::FloatRect(posX, posY, sizeX, sizeY));
     window.setView(view);
@@ -101,48 +95,67 @@ void clampCustomSettings() {
     int c = strCustomCols.empty() ? 8 : std::stoi(strCustomCols);
     int r = strCustomRows.empty() ? 8 : std::stoi(strCustomRows);
     int m = strCustomMines.empty() ? 10 : std::stoi(strCustomMines);
-
     if (c < 8) c = 8; if (c > 30) c = 30;
     if (r < 8) r = 8; if (r > 24) r = 24;
-
     int maxMines = (c * r) / 3;
     if (maxMines > 240) maxMines = 240;
-
-    if (m < 10) m = 10;
-    if (m > maxMines) m = maxMines;
-
-    strCustomCols = std::to_string(c);
-    strCustomRows = std::to_string(r);
-    strCustomMines = std::to_string(m);
-    
+    if (m < 10) m = 10; if (m > maxMines) m = maxMines;
+    strCustomCols = std::to_string(c); strCustomRows = std::to_string(r); strCustomMines = std::to_string(m);
     columns = c; rows = r; minesCount = m;
 }
 
+// Tylko czyści planszę
 void initGame() {
     grid.assign(columns * rows, Cell());
+    previousGrid = grid; // Reset kopii zapasowej
     currentState = GameState::Playing;
     flagsPlaced = 0;
+    prevFlagsPlaced = 0;
     isFirstClick = true;
     elapsedTime = 0;
     isDropdownOpen = false; 
+}
 
+// Zapis przed niebezpiecznym ruchem
+void saveState() {
+    if (!optUndo) return;
+    previousGrid = grid;
+    prevFlagsPlaced = flagsPlaced;
+}
+
+// Przywraca stan przed wdepnięciem na bombę
+void undoState() {
+    if (!optUndo || previousGrid.empty()) return;
+    grid = previousGrid;
+    flagsPlaced = prevFlagsPlaced;
+    currentState = GameState::Playing;
+}
+
+// Losuje miny z pominięciem bezpiecznego pola (i okolicy, jeśli włączono Opcję)
+void generateMines(int safeX, int safeY) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> disX(0, columns - 1);
     std::uniform_int_distribution<> disY(0, rows - 1);
 
-    int minesPlaced = 0;
-    while (minesPlaced < minesCount) {
-        int x = disX(gen);
-        int y = disY(gen);
-        int idx = getIndex(x, y);
+    int placed = 0;
+    while (placed < minesCount) {
+        int rx = disX(gen);
+        int ry = disY(gen);
+        int idx = getIndex(rx, ry);
 
-        if (!grid[idx].isMine) {
+        bool isSafe = false;
+        if (rx == safeX && ry == safeY) isSafe = true;
+        // Jeśli Ruch otwierający jest aktywny, cała okolica pierwszego kliknięcia jest bez bomb
+        if (optOpeningMove && std::abs(rx - safeX) <= 1 && std::abs(ry - safeY) <= 1) isSafe = true;
+
+        if (!grid[idx].isMine && !isSafe) {
             grid[idx].isMine = true;
-            minesPlaced++;
+            placed++;
         }
     }
 
+    // Obliczanie cyferek dla reszty
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < columns; ++x) {
             if (grid[getIndex(x, y)].isMine) continue;
@@ -160,7 +173,8 @@ void initGame() {
 void revealCell(int x, int y) {
     if (!isValid(x, y)) return;
     int idx = getIndex(x, y);
-    if (grid[idx].isRevealed || grid[idx].isFlagged) return;
+    // Znak zapytania też blokuje odkrycie!
+    if (grid[idx].isRevealed || grid[idx].flagState != 0) return;
 
     grid[idx].isRevealed = true;
 
@@ -171,6 +185,61 @@ void revealCell(int x, int y) {
             }
         }
     }
+}
+
+// Funkcja Bezpiecznej Okolicy (Klik w cyfrę)
+void chordCell(int x, int y) {
+    int idx = getIndex(x, y);
+    if (!grid[idx].isRevealed || grid[idx].adjacentMines == 0) return;
+
+    int nearbyFlags = 0;
+    for (int dy = -1; dy <= 1; ++dy) {
+        for (int dx = -1; dx <= 1; ++dx) {
+            if (isValid(x + dx, y + dy) && grid[getIndex(x + dx, y + dy)].flagState == 1) {
+                nearbyFlags++;
+            }
+        }
+    }
+
+    if (nearbyFlags == grid[idx].adjacentMines) {
+        saveState(); // Zapisujemy stan przed masowym odkryciem
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+                if (isValid(x + dx, y + dy)) {
+                    int neighborIdx = getIndex(x + dx, y + dy);
+                    if (!grid[neighborIdx].isRevealed && grid[neighborIdx].flagState == 0) {
+                        if (grid[neighborIdx].isMine) {
+                            currentState = GameState::GameOver;
+                            revealAllMines();
+                        } else {
+                            revealCell(x + dx, y + dy);
+                        }
+                    }
+                }
+            }
+        }
+        if (currentState != GameState::GameOver) checkVictory();
+    }
+}
+
+// Odkrywa wszystko, gdy uznaliśmy, że zaznaczyliśmy poprawnie wszystkie bomby
+void openRemainingSafeCells() {
+    if (minesCount - flagsPlaced != 0) return;
+    saveState();
+    for (int y = 0; y < rows; ++y) {
+        for (int x = 0; x < columns; ++x) {
+            int idx = getIndex(x, y);
+            if (!grid[idx].isRevealed && grid[idx].flagState != 1) {
+                if (grid[idx].isMine) {
+                    currentState = GameState::GameOver;
+                    revealAllMines();
+                } else {
+                    revealCell(x, y);
+                }
+            }
+        }
+    }
+    if (currentState != GameState::GameOver) checkVictory();
 }
 
 void checkVictory() {
