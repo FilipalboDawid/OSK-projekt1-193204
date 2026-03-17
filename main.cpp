@@ -4,10 +4,11 @@
 #include <iostream>
 #include <random>
 #include <algorithm>
-#include <fstream> // Do obsługi plików (Tabela wyników)
+#include <fstream> 
 
 const int TILE_SIZE = 32;
 const int TOP_UI_HEIGHT = 50; 
+const int MIN_WINDOW_WIDTH = 400; // Minimalna szerokość, żeby UI się nie zlało
 
 int columns = 8;
 int rows = 8;
@@ -18,7 +19,6 @@ bool isFirstClick = true;
 sf::Clock gameClock;
 int elapsedTime = 0;
 
-// Powiększony rozmiar logiczny, aby pomieścić tabelę wyników
 float logicalW = 650.0f;
 float logicalH = 550.0f;
 bool isFullscreen = false;
@@ -30,12 +30,11 @@ struct Cell {
     int adjacentMines = 0;
 };
 
-// Struktura i dane Tabeli Wyników
 struct ScoreEntry {
     std::string name;
     int time;
 };
-std::vector<ScoreEntry> leaderboards[4]; // 4 tablice dla 4 poziomów trudności
+std::vector<ScoreEntry> leaderboards[4]; 
 
 enum class GameState { Menu, Playing, GameOver, Victory, EnterName, Leaderboard };
 
@@ -45,11 +44,10 @@ std::string activeSkin = "classic";
 
 int selectedDifficulty = 0; 
 
-// Zmienne do pól tekstowych
 std::string strCustomCols = "10";
 std::string strCustomRows = "10";
 std::string strCustomMines = "15";
-int activeInputField = 0; // 0=brak, 1=Cols, 2=Rows, 3=Mines
+int activeInputField = 0; 
 std::string playerName = "";
 
 bool isDropdownOpen = false; 
@@ -76,7 +74,6 @@ bool loadTextures(const std::string& skinName) {
     return true;
 }
 
-// --- FUNKCJE TABELI WYNIKÓW ---
 void loadLeaderboard() {
     for (int i = 0; i < 4; ++i) leaderboards[i].clear();
     std::ifstream file("leaderboard.txt");
@@ -90,7 +87,6 @@ void loadLeaderboard() {
         }
         file.close();
     }
-    // Sortowanie każdego poziomu od najniższego czasu
     for (int i = 0; i < 4; ++i) {
         std::sort(leaderboards[i].begin(), leaderboards[i].end(), [](const ScoreEntry& a, const ScoreEntry& b) {
             return a.time < b.time;
@@ -102,7 +98,6 @@ void saveLeaderboard() {
     std::ofstream file("leaderboard.txt");
     if (file.is_open()) {
         for (int i = 0; i < 4; ++i) {
-            // Zapisujemy tylko top 10 dla każdego poziomu
             int limit = std::min((int)leaderboards[i].size(), 10);
             for (int j = 0; j < limit; ++j) {
                 file << i << " " << leaderboards[i][j].time << " " << leaderboards[i][j].name << "\n";
@@ -114,13 +109,11 @@ void saveLeaderboard() {
 
 void addScore(int diff, std::string name, int time) {
     if (name.empty()) name = "Anonim";
-    // Usunięcie spacji, żeby nie zepsuć odczytu z pliku tekstowego
     std::replace(name.begin(), name.end(), ' ', '_'); 
     leaderboards[diff].push_back({name, time});
     saveLeaderboard();
-    loadLeaderboard(); // Przeładowanie i posortowanie
+    loadLeaderboard(); 
 }
-// ------------------------------
 
 void adjustView(sf::RenderWindow& window) {
     float windowRatio = window.getSize().x / (float)window.getSize().y;
@@ -169,7 +162,6 @@ void clampCustomSettings() {
     if (m < 10) m = 10;
     if (m > maxMines) m = maxMines;
 
-    // Aktualizacja stringów na poprawne po weryfikacji
     strCustomCols = std::to_string(c);
     strCustomRows = std::to_string(r);
     strCustomMines = std::to_string(m);
@@ -236,9 +228,8 @@ void checkVictory() {
     for (const auto& cell : grid) {
         if (!cell.isMine && !cell.isRevealed) return;
     }
-    // Zamiast ekranu Victory, idziemy do wpisywania imienia!
     currentState = GameState::EnterName;
-    playerName = ""; // Reset imienia
+    playerName = ""; 
 }
 
 void revealAllMines() {
@@ -263,7 +254,7 @@ int main() {
     }
 
     loadTextures(activeSkin);
-    loadLeaderboard(); // Wczytanie wyników na start
+    loadLeaderboard(); 
 
     sf::Text titleMenu("USTAWIENIA GRY", font, 30); titleMenu.setPosition(20.0f, 20.0f);
     
@@ -272,7 +263,6 @@ int main() {
     sf::Text btnExpert("[ Ekspert (30x16, 99 min) ]", font, 20);            btnExpert.setPosition(20.0f, 130.0f);
     sf::Text btnCustom("[ Plansza Uzytkownika ]", font, 20);                btnCustom.setPosition(20.0f, 160.0f);
 
-    // Zmodyfikowane opcje dla planszy użytkownika - Klikalne teksty
     sf::Text lblCols("Szerokosc (8-30):", font, 18); lblCols.setPosition(50.0f, 190.0f);
     sf::Text valCol("10", font, 20);                 valCol.setPosition(250.0f, 188.0f);
 
@@ -305,7 +295,6 @@ int main() {
 
     sf::RectangleShape gameBg;
 
-    // Teksty do ekranu wpisywania imienia i tabeli
     sf::Text txtTitle("", font, 40); txtTitle.setPosition(50.0f, 50.0f);
     sf::Text txtSubtitle("", font, 24); txtSubtitle.setPosition(50.0f, 120.0f);
     sf::Text btnReturnMenu("[ Wroc do Menu ]", font, 24); btnReturnMenu.setPosition(50.0f, 480.0f);
@@ -320,18 +309,22 @@ int main() {
         sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
         sf::Vector2f mousePos = window.mapPixelToCoords(pixelPos);
 
+        // --- KALKULACJE SZEROKOŚCI I WYSRODKOWANIA PLANSZY ---
+        float boardWidth = columns * TILE_SIZE;
+        float boardHeight = rows * TILE_SIZE;
+        // Obliczamy offset (przesunięcie w prawo), jeśli okno jest szersze niż plansza (np. na 8x8)
+        float offsetX = (logicalW > boardWidth) ? (logicalW - boardWidth) / 2.0f : 0.0f;
+
         if (currentState == GameState::Playing && !isFirstClick) {
             elapsedTime = static_cast<int>(gameClock.getElapsedTime().asSeconds());
         }
 
-        // --- STYLOWANIE ---
         if (currentState == GameState::Menu) {
             styleButton(btnBeginner, selectedDifficulty == 0, mousePos);
             styleButton(btnIntermediate, selectedDifficulty == 1, mousePos);
             styleButton(btnExpert, selectedDifficulty == 2, mousePos);
             styleButton(btnCustom, selectedDifficulty == 3, mousePos);
 
-            // Czerwony kolor dla aktywnego pola tekstowego
             valCol.setFillColor(activeInputField == 1 ? sf::Color::Red : sf::Color::White);
             valRow.setFillColor(activeInputField == 2 ? sf::Color::Red : sf::Color::White);
             valMine.setFillColor(activeInputField == 3 ? sf::Color::Red : sf::Color::White);
@@ -366,14 +359,13 @@ int main() {
             if (event.type == sf::Event::Resized) adjustView(window);
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F11) toggleFullscreen(window);
 
-            // --- WPROWADZANIE TEKSTU ---
             if (event.type == sf::Event::TextEntered) {
-                if (event.text.unicode < 128) { // Tylko podstawowe znaki ASCII
+                if (event.text.unicode < 128) { 
                     char c = static_cast<char>(event.text.unicode);
                     
                     if (currentState == GameState::EnterName) {
                         if (c == '\b' && !playerName.empty()) playerName.pop_back();
-                        else if (c == '\r' || c == '\n') { // Enter
+                        else if (c == '\r' || c == '\n') { 
                             addScore(selectedDifficulty, playerName, elapsedTime);
                             currentState = GameState::Leaderboard;
                         }
@@ -393,12 +385,11 @@ int main() {
                 }
             }
 
-            // --- OBSŁUGA MYSZY ---
             if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
                     
                     if (currentState == GameState::Menu) {
-                        activeInputField = 0; // Reset aktywnego pola kliknięciem w tło
+                        activeInputField = 0; 
                         
                         if (btnBeginner.getGlobalBounds().contains(mousePos)) selectedDifficulty = 0;
                         else if (btnIntermediate.getGlobalBounds().contains(mousePos)) selectedDifficulty = 1;
@@ -420,9 +411,10 @@ int main() {
                             if (selectedDifficulty == 0) { columns = 8; rows = 8; minesCount = 10; }
                             else if (selectedDifficulty == 1) { columns = 16; rows = 16; minesCount = 40; }
                             else if (selectedDifficulty == 2) { columns = 30; rows = 16; minesCount = 99; }
-                            else { clampCustomSettings(); } // Walidacja i rzutowanie string -> int
+                            else { clampCustomSettings(); } 
 
-                            unsigned int w = std::max(600, columns * TILE_SIZE); 
+                            // UWAGA: Minimalna szerokość na poziomie gry to 400px!
+                            unsigned int w = std::max((unsigned int)MIN_WINDOW_WIDTH, (unsigned int)(columns * TILE_SIZE)); 
                             unsigned int h = rows * TILE_SIZE + TOP_UI_HEIGHT;
                             applyWindowSize(window, w, h);
                             initGame();
@@ -441,19 +433,22 @@ int main() {
                         }
                         else if (btnOptions.getGlobalBounds().contains(mousePos)) isDropdownOpen = true;
                         else {
-                            int x = static_cast<int>(mousePos.x) / TILE_SIZE;
-                            int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
-                            if (isValid(x, y) && !grid[getIndex(x, y)].isFlagged) {
-                                if (isFirstClick) {
-                                    isFirstClick = false;
-                                    gameClock.restart();
-                                }
-                                if (grid[getIndex(x, y)].isMine) {
-                                    currentState = GameState::GameOver;
-                                    revealAllMines();
-                                } else {
-                                    revealCell(x, y);
-                                    checkVictory();
+                            // Kliknięcie w planszę z uwzględnieniem offsetu
+                            if (mousePos.x >= offsetX && mousePos.x < offsetX + boardWidth && mousePos.y >= TOP_UI_HEIGHT) {
+                                int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
+                                int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
+                                if (isValid(x, y) && !grid[getIndex(x, y)].isFlagged) {
+                                    if (isFirstClick) {
+                                        isFirstClick = false;
+                                        gameClock.restart();
+                                    }
+                                    if (grid[getIndex(x, y)].isMine) {
+                                        currentState = GameState::GameOver;
+                                        revealAllMines();
+                                    } else {
+                                        revealCell(x, y);
+                                        checkVictory();
+                                    }
                                 }
                             }
                         }
@@ -480,18 +475,19 @@ int main() {
                     }
                 }
                 else if (event.mouseButton.button == sf::Mouse::Right && currentState == GameState::Playing && !isDropdownOpen) {
-                    int x = static_cast<int>(mousePos.x) / TILE_SIZE;
-                    int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
-                    if (isValid(x, y) && !grid[getIndex(x, y)].isRevealed) {
-                        grid[getIndex(x, y)].isFlagged = !grid[getIndex(x, y)].isFlagged;
-                        if (grid[getIndex(x, y)].isFlagged) flagsPlaced++;
-                        else flagsPlaced--;
+                    if (mousePos.x >= offsetX && mousePos.x < offsetX + boardWidth && mousePos.y >= TOP_UI_HEIGHT) {
+                        int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
+                        int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
+                        if (isValid(x, y) && !grid[getIndex(x, y)].isRevealed) {
+                            grid[getIndex(x, y)].isFlagged = !grid[getIndex(x, y)].isFlagged;
+                            if (grid[getIndex(x, y)].isFlagged) flagsPlaced++;
+                            else flagsPlaced--;
+                        }
                     }
                 }
             }
         }
 
-        // --- RENDEROWANIE ---
         window.clear(sf::Color::Black);
         gameBg.setSize(sf::Vector2f(logicalW, logicalH));
         gameBg.setFillColor(sf::Color(70, 70, 70));
@@ -512,6 +508,7 @@ int main() {
             window.draw(btnShowLeaderboard);
         } 
         else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
+            // Rysowanie kafelków przesuniętych o offsetX
             for (int y = 0; y < rows; ++y) {
                 for (int x = 0; x < columns; ++x) {
                     Cell cell = grid[getIndex(x, y)];
@@ -527,34 +524,34 @@ int main() {
 
                     sf::Sprite sprite;
                     sprite.setTexture(*currentTex);
-                    sprite.setPosition(static_cast<float>(x * TILE_SIZE), static_cast<float>(y * TILE_SIZE + TOP_UI_HEIGHT));
+                    sprite.setPosition(static_cast<float>(x * TILE_SIZE) + offsetX, static_cast<float>(y * TILE_SIZE + TOP_UI_HEIGHT));
                     window.draw(sprite);
                 }
             }
 
-            float currentWidth = columns * TILE_SIZE * 1.0f;
-            sf::RectangleShape topBar(sf::Vector2f(currentWidth, TOP_UI_HEIGHT * 1.0f));
+            // Pasek na całą dostępną szerokość okna
+            sf::RectangleShape topBar(sf::Vector2f(logicalW, TOP_UI_HEIGHT * 1.0f));
             topBar.setFillColor(sf::Color(40, 40, 40));
             window.draw(topBar);
             
             window.draw(btnOptions); 
 
             txtTimer.setString("Czas: " + std::to_string(elapsedTime) + "s");
-            txtTimer.setPosition(currentWidth / 2.0f - 40.0f, 12.0f);
+            txtTimer.setPosition(logicalW / 2.0f - 40.0f, 12.0f);
             window.draw(txtTimer);
 
             txtMines.setString("Miny: " + std::to_string(minesCount - flagsPlaced));
-            txtMines.setPosition(currentWidth - 100.0f, 12.0f);
+            txtMines.setPosition(logicalW - 120.0f, 12.0f);
             window.draw(txtMines);
 
             if (currentState == GameState::GameOver) {
-                sf::RectangleShape overlay(sf::Vector2f(currentWidth, 60.0f));
+                sf::RectangleShape overlay(sf::Vector2f(logicalW, 60.0f));
                 overlay.setFillColor(sf::Color(0, 0, 0, 200));
                 overlay.setPosition(0.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 30.0f);
                 window.draw(overlay);
 
                 msgEnd.setString("PRZEGRANA! Kliknij by zagrac");
-                msgEnd.setPosition(currentWidth / 2.0f - msgEnd.getGlobalBounds().width / 2.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 15.0f);
+                msgEnd.setPosition(logicalW / 2.0f - msgEnd.getGlobalBounds().width / 2.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 15.0f);
                 window.draw(msgEnd);
             }
 
@@ -565,7 +562,7 @@ int main() {
             }
         }
         else if (currentState == GameState::EnterName) {
-            applyWindowSize(window, 650, 550); // Wymuszenie szerokiego okna
+            applyWindowSize(window, 650, 550); 
             txtTitle.setString("WYGRANA!");
             txtTitle.setFillColor(sf::Color::Green);
             txtSubtitle.setString("Czas: " + std::to_string(elapsedTime) + "s\nWpisz swoje imie (i nacisnij ENTER):\n\n> " + playerName + "_");
@@ -587,7 +584,7 @@ int main() {
                 window.draw(header);
 
                 std::string scoresText = "";
-                int limit = std::min((int)leaderboards[i].size(), 3); // Wyświetla top 3 dla każdego
+                int limit = std::min((int)leaderboards[i].size(), 3); 
                 if (limit == 0) scoresText = "Brak wynikow.";
                 for (int j = 0; j < limit; ++j) {
                     scoresText += std::to_string(j+1) + ". " + leaderboards[i][j].name + " - " + std::to_string(leaderboards[i][j].time) + "s\n";
