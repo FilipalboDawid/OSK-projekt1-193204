@@ -5,8 +5,13 @@
 #include "ui.hpp"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(logicalW, logicalH), "Minesweeper C++", sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode(logicalW, logicalH), "Saper", sf::Style::Default);
     window.setFramerateLimit(60);
+
+    sf::Image icon;
+    if (icon.loadFromFile("assets/classic/mine.png")) {
+        window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+    }
 
     if (!font.loadFromFile("assets/pixel.ttf")) {
         if (!font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")) {
