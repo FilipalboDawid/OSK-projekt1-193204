@@ -8,8 +8,9 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(logicalW, logicalH), "Minesweeper C++", sf::Style::Default);
     window.setFramerateLimit(60);
 
-    if (!font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")) {
-        font.loadFromFile("C:/Windows/Fonts/arial.ttf");
+    // NOWOŚĆ: Ładowanie 8-bitowej czcionki
+    if (!font.loadFromFile("assets/pixel.ttf")) {
+        font.loadFromFile("C:/Windows/Fonts/arial.ttf"); // Fallback w razie błędu
     }
 
     loadTextures(activeSkin);
@@ -40,11 +41,11 @@ int main() {
                     if (currentState == GameState::Menu) window.close();
                     else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
                         isDropdownOpen = !isDropdownOpen;
-                        isSkinDropdownOpen = false; // Wyzerowanie dla bezpieczeństwa
+                        isSkinDropdownOpen = false; 
                     }
                 }
                 if (event.key.code == sf::Keyboard::H) {
-                    if (currentState == GameState::Playing && optHints && !isDropdownOpen) {
+                    if (currentState == GameState::Playing && optHints && !isDropdownOpen && !isSkinDropdownOpen) {
                         if (mousePos.x >= offsetX && mousePos.x < offsetX + boardWidth && mousePos.y >= TOP_UI_HEIGHT) {
                             int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
                             int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
@@ -139,7 +140,6 @@ int main() {
                         if (isDropdownOpen) {
                             bool handled = true;
 
-                            // 1. Zagnieżdżona lista Skórek
                             if (isSkinDropdownOpen && bgSkinDropdown.getGlobalBounds().contains(mousePos)) {
                                 if (optSkinClassic.getGlobalBounds().contains(mousePos)) setSkin("classic");
                                 else if (optSkinModern.getGlobalBounds().contains(mousePos)) setSkin("modern");
@@ -154,10 +154,9 @@ int main() {
                             }
                             else if (dropQuit.getGlobalBounds().contains(mousePos)) window.close();
                             else if (dropSkin.getGlobalBounds().contains(mousePos)) {
-                                handled = false; // Najechaliśmy na "Zmień Skórkę", więc ignorujemy i NIE zamykamy Opcji
+                                handled = false; 
                             }
                             
-                            // Zamykanie obu menu po udanej akcji
                             if (handled) {
                                 isDropdownOpen = false; 
                                 isSkinDropdownOpen = false;
@@ -194,7 +193,7 @@ int main() {
                         }
                     }
                 }
-                else if (event.mouseButton.button == sf::Mouse::Right && currentState == GameState::Playing && !isDropdownOpen) {
+                else if (event.mouseButton.button == sf::Mouse::Right && currentState == GameState::Playing && !isDropdownOpen && !isSkinDropdownOpen) {
                     if (mousePos.x >= offsetX && mousePos.x < offsetX + boardWidth && mousePos.y >= TOP_UI_HEIGHT) {
                         int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
                         int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
@@ -216,7 +215,8 @@ int main() {
             }
         }
 
-        renderUI(window, offsetX); 
+        // Zmiana argumentów renderUI!
+        renderUI(window, offsetX, mousePos); 
         window.display();
     }
 
