@@ -10,7 +10,7 @@ const int MIN_WINDOW_WIDTH = 400;
 struct Cell {
     bool isMine = false;
     bool isRevealed = false;
-    int flagState = 0; // 0 = nic, 1 = flaga, 2 = znak zapytania
+    int flagState = 0; 
     int adjacentMines = 0;
 };
 
@@ -27,14 +27,12 @@ extern float logicalW, logicalH;
 extern sf::Clock gameClock;
 
 extern std::vector<Cell> grid;
-// Kopia planszy do funkcji "Rozbrojenia" (Cofania)
 extern std::vector<Cell> previousGrid; 
 extern int prevFlagsPlaced;
 
 extern GameState currentState;
 extern std::string activeSkin;
 
-// Opcje dodatkowe
 extern bool optOpeningMove, optQuestionMarks, optChording, optOpenRemaining, optUndo, optHints;
 
 extern int selectedDifficulty, customCols, customRows, customMines, activeInputField;
@@ -54,6 +52,10 @@ extern sf::Text dropRestart, dropUndo, dropSkin, dropFullscreen, dropMenu;
 extern sf::RectangleShape dropdownBg, gameBg;
 extern sf::Text txtTitle, txtSubtitle, btnReturnMenu;
 
-// Przyciski nowych opcji w Menu
 extern sf::Text lblOptionsTitle;
 extern sf::Text btnOptOpening, btnOptQuestion, btnOptChording, btnOptRemaining, btnOptUndo, btnOptHints;
+
+// NOWOŚĆ: Zmienne do dymków z podpowiedziami (Tooltip)
+extern sf::Text tooltipText;
+extern sf::RectangleShape tooltipBg;
+extern bool showTooltip;

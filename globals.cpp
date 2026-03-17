@@ -8,7 +8,7 @@ bool isFirstClick = true;
 sf::Clock gameClock;
 int elapsedTime = 0;
 
-float logicalW = 750.0f; // Minimalnie poszerzone menu, zeby zmiescic nowe opcje po prawej
+float logicalW = 750.0f; 
 float logicalH = 550.0f;
 bool isFullscreen = false;
 
@@ -19,7 +19,6 @@ int prevFlagsPlaced = 0;
 GameState currentState = GameState::Menu;
 std::string activeSkin = "classic"; 
 
-// Dodatkowe opcje (domyślnie wyłączone)
 bool optOpeningMove = false;
 bool optQuestionMarks = false;
 bool optChording = false;
@@ -51,3 +50,8 @@ sf::Text txtTitle, txtSubtitle, btnReturnMenu;
 
 sf::Text lblOptionsTitle;
 sf::Text btnOptOpening, btnOptQuestion, btnOptChording, btnOptRemaining, btnOptUndo, btnOptHints;
+
+// NOWOŚĆ
+sf::Text tooltipText;
+sf::RectangleShape tooltipBg;
+bool showTooltip = false;

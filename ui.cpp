@@ -9,54 +9,55 @@ void styleButton(sf::Text& btn, bool isSelected, sf::Vector2f mousePos) {
     else btn.setFillColor(sf::Color(255, 255, 255));
 }
 
-std::string getCheckbox(bool opt) { return opt ? "[X] " : "[ ] "; }
+// Zmienione na sf::String, by bezpiecznie łączyć polskie znaki z resztą tekstu
+sf::String getCheckbox(bool opt) { return opt ? L"[X] " : L"[ ] "; }
 
 void initUI() {
-    titleMenu = sf::Text("USTAWIENIA GRY", font, 30); titleMenu.setPosition(20.0f, 20.0f);
+    titleMenu = sf::Text(L"USTAWIENIA GRY", font, 30); titleMenu.setPosition(20.0f, 20.0f);
     
     // Klasyczne opcje (lewa kolumna)
-    btnBeginner = sf::Text("[ Poczatkujacy (8x8, 10 min) ]", font, 20);      btnBeginner.setPosition(20.0f, 70.0f);
-    btnIntermediate = sf::Text("[ Zaawansowany (16x16, 40 min) ]", font, 20); btnIntermediate.setPosition(20.0f, 100.0f);
-    btnExpert = sf::Text("[ Ekspert (30x16, 99 min) ]", font, 20);            btnExpert.setPosition(20.0f, 130.0f);
-    btnCustom = sf::Text("[ Plansza Uzytkownika ]", font, 20);                btnCustom.setPosition(20.0f, 160.0f);
+    btnBeginner = sf::Text(L"[ Początkujący (8x8, 10 min) ]", font, 20);      btnBeginner.setPosition(20.0f, 70.0f);
+    btnIntermediate = sf::Text(L"[ Zaawansowany (16x16, 40 min) ]", font, 20); btnIntermediate.setPosition(20.0f, 100.0f);
+    btnExpert = sf::Text(L"[ Ekspert (30x16, 99 min) ]", font, 20);            btnExpert.setPosition(20.0f, 130.0f);
+    btnCustom = sf::Text(L"[ Plansza Użytkownika ]", font, 20);                btnCustom.setPosition(20.0f, 160.0f);
 
-    lblCols = sf::Text("Szerokosc (8-30):", font, 18); lblCols.setPosition(50.0f, 190.0f);
-    valCol = sf::Text("10", font, 20);                 valCol.setPosition(250.0f, 188.0f);
-    lblRows = sf::Text("Wysokosc (8-24):", font, 18);  lblRows.setPosition(50.0f, 220.0f);
-    valRow = sf::Text("10", font, 20);                 valRow.setPosition(250.0f, 218.0f);
-    lblMines = sf::Text("Miny (max A*B/3):", font, 18); lblMines.setPosition(50.0f, 250.0f);
-    valMine = sf::Text("15", font, 20);                 valMine.setPosition(250.0f, 248.0f);
+    lblCols = sf::Text(L"Szerokość (8-30):", font, 18); lblCols.setPosition(50.0f, 190.0f);
+    valCol = sf::Text("10", font, 20);                  valCol.setPosition(250.0f, 188.0f);
+    lblRows = sf::Text(L"Wysokość (8-24):", font, 18);  lblRows.setPosition(50.0f, 220.0f);
+    valRow = sf::Text("10", font, 20);                  valRow.setPosition(250.0f, 218.0f);
+    lblMines = sf::Text(L"Miny (max A*B/3):", font, 18); lblMines.setPosition(50.0f, 250.0f);
+    valMine = sf::Text("15", font, 20);                  valMine.setPosition(250.0f, 248.0f);
 
-    btnSkinClassic = sf::Text("[ Skorka: Classic ]", font, 20); btnSkinClassic.setPosition(20.0f, 320.0f);
-    btnSkinModern = sf::Text("[ Skorka: Modern ]", font, 20);   btnSkinModern.setPosition(220.0f, 320.0f);
-    btnSkinGreen = sf::Text("[ Skorka: Green ]", font, 20);     btnSkinGreen.setPosition(420.0f, 320.0f);
+    btnSkinClassic = sf::Text(L"[ Skórka: Classic ]", font, 20); btnSkinClassic.setPosition(20.0f, 320.0f);
+    btnSkinModern = sf::Text(L"[ Skórka: Modern ]", font, 20);   btnSkinModern.setPosition(220.0f, 320.0f);
+    btnSkinGreen = sf::Text(L"[ Skórka: Green ]", font, 20);     btnSkinGreen.setPosition(420.0f, 320.0f);
     
-    btnStart = sf::Text(">>> START GRY <<<", font, 32);         btnStart.setPosition(20.0f, 380.0f);
-    btnShowLeaderboard = sf::Text("[ TABELA WYNIKOW ]", font, 20); btnShowLeaderboard.setPosition(420.0f, 390.0f);
+    btnStart = sf::Text(L">>> START GRY <<<", font, 32);         btnStart.setPosition(20.0f, 380.0f);
+    btnShowLeaderboard = sf::Text(L"[ TABELA WYNIKÓW ]", font, 20); btnShowLeaderboard.setPosition(420.0f, 390.0f);
 
     // --- NOWE OPCJE (Prawa kolumna) ---
     float rightColX = 380.0f;
-    lblOptionsTitle = sf::Text("DODATKOWE USTAWIENIA", font, 22); lblOptionsTitle.setPosition(rightColX, 70.0f);
+    lblOptionsTitle = sf::Text(L"DODATKOWE USTAWIENIA", font, 22); lblOptionsTitle.setPosition(rightColX, 70.0f);
     lblOptionsTitle.setFillColor(sf::Color::Yellow);
     
-    btnOptOpening = sf::Text(getCheckbox(optOpeningMove) + "Ruch otwierajacy", font, 18);  btnOptOpening.setPosition(rightColX, 110.0f);
-    btnOptQuestion = sf::Text(getCheckbox(optQuestionMarks) + "Pytajniki (PPM)", font, 18); btnOptQuestion.setPosition(rightColX, 140.0f);
-    btnOptChording = sf::Text(getCheckbox(optChording) + "Bezpieczna okolica", font, 18);   btnOptChording.setPosition(rightColX, 170.0f);
-    btnOptRemaining = sf::Text(getCheckbox(optOpenRemaining) + "Otworz pozostale", font, 18); btnOptRemaining.setPosition(rightColX, 200.0f);
-    btnOptUndo = sf::Text(getCheckbox(optUndo) + "Rozbroj (Cofanie)", font, 18);            btnOptUndo.setPosition(rightColX, 230.0f);
-    btnOptHints = sf::Text(getCheckbox(optHints) + "Podpowiedz (Kl. H)", font, 18);         btnOptHints.setPosition(rightColX, 260.0f);
+    btnOptOpening = sf::Text(getCheckbox(optOpeningMove) + sf::String(L"Ruch otwierający"), font, 18);  btnOptOpening.setPosition(rightColX, 110.0f);
+    btnOptQuestion = sf::Text(getCheckbox(optQuestionMarks) + sf::String(L"Pytajniki (PPM)"), font, 18); btnOptQuestion.setPosition(rightColX, 140.0f);
+    btnOptChording = sf::Text(getCheckbox(optChording) + sf::String(L"Bezpieczna okolica"), font, 18);   btnOptChording.setPosition(rightColX, 170.0f);
+    btnOptRemaining = sf::Text(getCheckbox(optOpenRemaining) + sf::String(L"Otwórz pozostałe"), font, 18); btnOptRemaining.setPosition(rightColX, 200.0f);
+    btnOptUndo = sf::Text(getCheckbox(optUndo) + sf::String(L"Rozbrój (Cofanie)"), font, 18);            btnOptUndo.setPosition(rightColX, 230.0f);
+    btnOptHints = sf::Text(getCheckbox(optHints) + sf::String(L"Podpowiedź (Kl. H)"), font, 18);         btnOptHints.setPosition(rightColX, 260.0f);
 
     // --- ELEMENTY W GRZE ---
     msgEnd = sf::Text("", font, 20); 
     txtTimer = sf::Text("", font, 20);
     txtMines = sf::Text("", font, 20);
-    btnOptions = sf::Text("[ Opcje ]", font, 20); btnOptions.setPosition(10.0f, 12.0f);
+    btnOptions = sf::Text(L"[ Opcje ]", font, 20); btnOptions.setPosition(10.0f, 12.0f);
 
-    dropRestart = sf::Text("Restart", font, 18);   dropRestart.setPosition(15.0f, TOP_UI_HEIGHT + 10.0f);
-    dropUndo = sf::Text("-> Cofnij Ruch", font, 18); dropUndo.setPosition(15.0f, TOP_UI_HEIGHT + 40.0f); dropUndo.setFillColor(sf::Color::Cyan);
-    dropSkin = sf::Text("Zmien Skorke", font, 18); dropSkin.setPosition(15.0f, TOP_UI_HEIGHT + 70.0f);
-    dropFullscreen = sf::Text("Pelny Ekran (F11)", font, 18); dropFullscreen.setPosition(15.0f, TOP_UI_HEIGHT + 100.0f);
-    dropMenu = sf::Text("Wroc do Menu", font, 18); dropMenu.setPosition(15.0f, TOP_UI_HEIGHT + 130.0f);
+    dropRestart = sf::Text(L"Restart", font, 18);   dropRestart.setPosition(15.0f, TOP_UI_HEIGHT + 10.0f);
+    dropUndo = sf::Text(L"-> Cofnij Ruch", font, 18); dropUndo.setPosition(15.0f, TOP_UI_HEIGHT + 40.0f); dropUndo.setFillColor(sf::Color::Cyan);
+    dropSkin = sf::Text(L"Zmień Skórkę", font, 18); dropSkin.setPosition(15.0f, TOP_UI_HEIGHT + 70.0f);
+    dropFullscreen = sf::Text(L"Pełny Ekran (F11)", font, 18); dropFullscreen.setPosition(15.0f, TOP_UI_HEIGHT + 100.0f);
+    dropMenu = sf::Text(L"Wróć do Menu", font, 18); dropMenu.setPosition(15.0f, TOP_UI_HEIGHT + 130.0f);
     
     dropdownBg.setSize(sf::Vector2f(200.0f, 160.0f));
     dropdownBg.setFillColor(sf::Color(50, 50, 50, 240)); 
@@ -64,7 +65,14 @@ void initUI() {
 
     txtTitle = sf::Text("", font, 40); txtTitle.setPosition(50.0f, 50.0f);
     txtSubtitle = sf::Text("", font, 24); txtSubtitle.setPosition(50.0f, 120.0f);
-    btnReturnMenu = sf::Text("[ Wroc do Menu ]", font, 24); btnReturnMenu.setPosition(50.0f, 480.0f);
+    btnReturnMenu = sf::Text(L"[ Wróć do Menu ]", font, 24); btnReturnMenu.setPosition(50.0f, 480.0f);
+
+    // Dymki
+    tooltipText = sf::Text("", font, 14);
+    tooltipText.setFillColor(sf::Color::White);
+    tooltipBg.setFillColor(sf::Color(20, 20, 20, 240)); 
+    tooltipBg.setOutlineThickness(1.0f);
+    tooltipBg.setOutlineColor(sf::Color::Yellow);
 }
 
 void updateUI(sf::Vector2f mousePos) {
@@ -88,13 +96,12 @@ void updateUI(sf::Vector2f mousePos) {
         valRow.setString(strCustomRows + (activeInputField == 2 ? "_" : ""));
         valMine.setString(strCustomMines + (activeInputField == 3 ? "_" : ""));
 
-        // Aktualizacja tekstów checkboxów
-        btnOptOpening.setString(getCheckbox(optOpeningMove) + "Ruch otwierajacy");
-        btnOptQuestion.setString(getCheckbox(optQuestionMarks) + "Pytajniki (PPM)");
-        btnOptChording.setString(getCheckbox(optChording) + "Bezpieczna okolica");
-        btnOptRemaining.setString(getCheckbox(optOpenRemaining) + "Otworz pozostale");
-        btnOptUndo.setString(getCheckbox(optUndo) + "Rozbroj (Cofanie)");
-        btnOptHints.setString(getCheckbox(optHints) + "Podpowiedz (Kl. H)");
+        btnOptOpening.setString(getCheckbox(optOpeningMove) + sf::String(L"Ruch otwierający"));
+        btnOptQuestion.setString(getCheckbox(optQuestionMarks) + sf::String(L"Pytajniki (PPM)"));
+        btnOptChording.setString(getCheckbox(optChording) + sf::String(L"Bezpieczna okolica"));
+        btnOptRemaining.setString(getCheckbox(optOpenRemaining) + sf::String(L"Otwórz pozostałe"));
+        btnOptUndo.setString(getCheckbox(optUndo) + sf::String(L"Rozbrój (Cofanie)"));
+        btnOptHints.setString(getCheckbox(optHints) + sf::String(L"Podpowiedź (Kl. H)"));
 
         styleButton(btnOptOpening, false, mousePos);
         styleButton(btnOptQuestion, false, mousePos);
@@ -102,11 +109,49 @@ void updateUI(sf::Vector2f mousePos) {
         styleButton(btnOptRemaining, false, mousePos);
         styleButton(btnOptUndo, false, mousePos);
         styleButton(btnOptHints, false, mousePos);
+
+        showTooltip = false;
+        if (btnOptOpening.getGlobalBounds().contains(mousePos)) {
+            tooltipText.setString(L"Pierwszy ruch gwarantuje puste pole\ni otwiera bezpieczny obszar wokół.");
+            showTooltip = true;
+        } else if (btnOptQuestion.getGlobalBounds().contains(mousePos)) {
+            tooltipText.setString(L"Kliknij prawym ponownie na flagę,\nby zmienić ją w znak zapytania (?).");
+            showTooltip = true;
+        } else if (btnOptChording.getGlobalBounds().contains(mousePos)) {
+            tooltipText.setString(L"Kliknij w odkrytą cyfrę, jeśli wokół niej\njest poprawna liczba flag, by otworzyć resztę.");
+            showTooltip = true;
+        } else if (btnOptRemaining.getGlobalBounds().contains(mousePos)) {
+            tooltipText.setString(L"Gdy oflagujesz wszystkie miny, kliknij\nw licznik na górze, by odkryć całą planszę.");
+            showTooltip = true;
+        } else if (btnOptUndo.getGlobalBounds().contains(mousePos)) {
+            tooltipText.setString(L"Zapisuje planszę przed ryzykownym ruchem.\nPo wybuchu możesz cofnąć czas w menu Opcje.");
+            showTooltip = true;
+        } else if (btnOptHints.getGlobalBounds().contains(mousePos)) {
+            tooltipText.setString(L"Najedź na pole i wciśnij 'H', by oflagować\nbombę lub bezpiecznie odkryć puste pole.");
+            showTooltip = true;
+        }
+
+        if (showTooltip) {
+            sf::FloatRect textBounds = tooltipText.getLocalBounds();
+            float bgW = textBounds.width + 16.0f;
+            float bgH = textBounds.height + 12.0f;
+            
+            float posX = mousePos.x + 15.0f;
+            float posY = mousePos.y + 15.0f;
+
+            if (posX + bgW > logicalW) posX = mousePos.x - bgW - 5.0f;
+            if (posY + bgH > logicalH) posY = mousePos.y - bgH - 5.0f;
+
+            tooltipBg.setSize(sf::Vector2f(bgW, bgH));
+            tooltipBg.setPosition(posX, posY);
+            tooltipText.setPosition(posX + 8.0f, posY + 4.0f);
+        }
+
     } 
     else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
         styleButton(btnOptions, isDropdownOpen, mousePos); 
         styleButton(msgEnd, false, mousePos);
-        styleButton(txtMines, false, mousePos); // Licznik jako przycisk (do Otwórz Pozostałe)
+        styleButton(txtMines, false, mousePos); 
         
         if (isDropdownOpen) {
             styleButton(dropRestart, false, mousePos);
@@ -115,7 +160,7 @@ void updateUI(sf::Vector2f mousePos) {
             styleButton(dropMenu, false, mousePos);
             if (currentState == GameState::GameOver && optUndo) {
                 if (dropUndo.getGlobalBounds().contains(mousePos)) dropUndo.setFillColor(sf::Color::Yellow);
-                else dropUndo.setFillColor(sf::Color::Cyan); // Specjalny kolor
+                else dropUndo.setFillColor(sf::Color::Cyan); 
             }
         }
     }
@@ -147,6 +192,11 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
         window.draw(btnSkinClassic); window.draw(btnSkinModern); window.draw(btnSkinGreen);
         window.draw(btnStart);
         window.draw(btnShowLeaderboard);
+
+        if (showTooltip) {
+            window.draw(tooltipBg);
+            window.draw(tooltipText);
+        }
     } 
     else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
         for (int y = 0; y < rows; ++y) {
@@ -156,7 +206,7 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
                 
                 if (!cell.isRevealed) {
                     if (cell.flagState == 1) currentTex = &texFlag;
-                    else if (cell.flagState == 2) currentTex = &texQuestion; // NOWOŚĆ: Rysowanie pytajnika
+                    else if (cell.flagState == 2) currentTex = &texQuestion;
                 } else {
                     if (cell.isMine) currentTex = &texMine;
                     else if (cell.adjacentMines == 0) currentTex = &texEmpty;
@@ -175,11 +225,11 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
         window.draw(topBar);
         window.draw(btnOptions); 
 
-        txtTimer.setString("Czas: " + std::to_string(elapsedTime) + "s");
+        txtTimer.setString(sf::String(L"Czas: ") + std::to_string(elapsedTime) + sf::String(L"s"));
         txtTimer.setPosition(logicalW / 2.0f - 40.0f, 12.0f);
         window.draw(txtTimer);
 
-        txtMines.setString("Miny: " + std::to_string(minesCount - flagsPlaced));
+        txtMines.setString(sf::String(L"Miny: ") + std::to_string(minesCount - flagsPlaced));
         txtMines.setPosition(logicalW - 120.0f, 12.0f);
         window.draw(txtMines);
 
@@ -189,7 +239,7 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
             overlay.setPosition(0.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 30.0f);
             window.draw(overlay);
 
-            msgEnd.setString("PRZEGRANA! Kliknij by zagrac" + std::string(optUndo ? " lub wejdz w Opcje by cofnac" : ""));
+            msgEnd.setString(sf::String(L"PRZEGRANA! Kliknij by zagrać") + (optUndo ? sf::String(L" lub wejdź w Opcje by cofnąć") : sf::String(L"")));
             msgEnd.setPosition(logicalW / 2.0f - msgEnd.getGlobalBounds().width / 2.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 15.0f);
             window.draw(msgEnd);
         }
@@ -197,7 +247,6 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
         if (isDropdownOpen) {
             window.draw(dropdownBg);
             window.draw(dropRestart); 
-            // Cofnij rysujemy tylko, jeśli jest włączone i gra jest przegrana
             if (currentState == GameState::GameOver && optUndo) window.draw(dropUndo);
             window.draw(dropSkin); 
             window.draw(dropFullscreen); window.draw(dropMenu);
@@ -205,31 +254,41 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
     }
     else if (currentState == GameState::EnterName) {
         applyWindowSize(window, 750, 550); 
-        txtTitle.setString("WYGRANA!");
+        txtTitle.setString(L"WYGRANA!");
         txtTitle.setFillColor(sf::Color::Green);
-        txtSubtitle.setString("Czas: " + std::to_string(elapsedTime) + "s\nWpisz swoje imie (i nacisnij ENTER):\n\n> " + playerName + "_");
+        
+        sf::String subText = L"Czas: ";
+        subText += std::to_string(elapsedTime);
+        subText += L"s\nWpisz swoje imię (i naciśnij ENTER):\n\n> ";
+        subText += playerName;
+        subText += L"_";
+        
+        txtSubtitle.setString(subText);
         window.draw(txtTitle);
         window.draw(txtSubtitle);
         window.draw(btnReturnMenu);
     }
     else if (currentState == GameState::Leaderboard) {
         applyWindowSize(window, 750, 550);
-        txtTitle.setString("TABELA WYNIKOW");
+        txtTitle.setString(L"TABELA WYNIKÓW");
         txtTitle.setFillColor(sf::Color::White);
         window.draw(txtTitle);
 
-        std::string diffNames[] = {"Poczatkujacy", "Zaawansowany", "Ekspert", "Wlasna Plansza"};
+        sf::String diffNames[] = {L"Początkujący", L"Zaawansowany", L"Ekspert", L"Własna Plansza"};
         for (int i = 0; i < 4; ++i) {
             sf::Text header(diffNames[i], font, 20);
             header.setFillColor(sf::Color::Yellow);
             header.setPosition(50.0f, 120.0f + i * 90.0f);
             window.draw(header);
 
-            std::string scoresText = "";
+            sf::String scoresText = L"";
             int limit = std::min((int)leaderboards[i].size(), 3); 
-            if (limit == 0) scoresText = "Brak wynikow.";
+            if (limit == 0) scoresText = L"Brak wyników.";
             for (int j = 0; j < limit; ++j) {
-                scoresText += std::to_string(j+1) + ". " + leaderboards[i][j].name + " - " + std::to_string(leaderboards[i][j].time) + "s\n";
+                scoresText += std::to_string(j+1) + ". ";
+                scoresText += leaderboards[i][j].name;
+                scoresText += L" - ";
+                scoresText += std::to_string(leaderboards[i][j].time) + "s\n";
             }
             sf::Text scoresList(scoresText, font, 16);
             scoresList.setPosition(50.0f, 150.0f + i * 90.0f);
