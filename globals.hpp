@@ -38,3 +38,12 @@ extern sf::Texture texHidden, texEmpty, texMine, texFlag;
 extern sf::Texture texNumbers[8];
 extern sf::Font font;
 extern std::vector<ScoreEntry> leaderboards[4];
+
+// --- ELEMENTY UI ---
+extern sf::Text titleMenu, btnBeginner, btnIntermediate, btnExpert, btnCustom;
+extern sf::Text lblCols, valCol, lblRows, valRow, lblMines, valMine;
+extern sf::Text btnSkinClassic, btnSkinModern, btnSkinGreen, btnStart, btnShowLeaderboard;
+extern sf::Text msgEnd, txtTimer, txtMines, btnOptions;
+extern sf::Text dropRestart, dropSkin, dropFullscreen, dropMenu;
+extern sf::RectangleShape dropdownBg, gameBg;
+extern sf::Text txtTitle, txtSubtitle, btnReturnMenu;
