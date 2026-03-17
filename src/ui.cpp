@@ -8,11 +8,9 @@ void drawRetroButton(sf::RenderWindow& window, sf::Text& text, sf::Vector2f mous
     sf::FloatRect bounds = text.getGlobalBounds();
     bool isHovered = bounds.contains(mousePos);
 
-    // Kształt tła - trochę większy w dół na poczet czcionki 8bit
     sf::RectangleShape bg(sf::Vector2f(bounds.width, bounds.height + 14.0f));
     bg.setPosition(bounds.left, bounds.top - 4.0f);
 
-    // style: 0 = normalny szary, 1 = akcent (zielony), 2 = niebezpieczny (czerwony)
     sf::Color bgColor(70, 70, 70);
     sf::Color outColor(40, 40, 40);
     sf::Color txtColor = sf::Color::White;
@@ -26,7 +24,7 @@ void drawRetroButton(sf::RenderWindow& window, sf::Text& text, sf::Vector2f mous
     }
 
     if (isHovered) {
-        bgColor = bgColor + sf::Color(40, 40, 40); // Rozjaśnienie przy najechaniu
+        bgColor = bgColor + sf::Color(40, 40, 40); 
         outColor = sf::Color::White;
         txtColor = sf::Color::Yellow;
     }
@@ -35,7 +33,6 @@ void drawRetroButton(sf::RenderWindow& window, sf::Text& text, sf::Vector2f mous
     bg.setOutlineThickness(2.0f);
     bg.setOutlineColor(outColor);
 
-    // Rysowanie cienia
     sf::RectangleShape shadow = bg;
     shadow.setFillColor(sf::Color(0, 0, 0, 180));
     shadow.setOutlineThickness(0);
@@ -43,7 +40,6 @@ void drawRetroButton(sf::RenderWindow& window, sf::Text& text, sf::Vector2f mous
 
     if (!isHovered) window.draw(shadow);
 
-    // Efekt "wciśnięcia" guzika
     if (isHovered) {
         bg.move(2.0f, 2.0f);
         text.move(2.0f, 2.0f);
@@ -53,11 +49,9 @@ void drawRetroButton(sf::RenderWindow& window, sf::Text& text, sf::Vector2f mous
     text.setFillColor(txtColor);
     window.draw(text);
 
-    // Cofnięcie tekstu po narysowaniu, żeby nie "odjechał" na stałe
     if (isHovered) text.move(-2.0f, -2.0f);
 }
 
-// Rysowanie obramowania dla pól liczbowych (szerokość/wysokość itp.)
 void drawRetroInput(sf::RenderWindow& window, sf::Text& text, bool isActive) {
     sf::FloatRect bounds = text.getGlobalBounds();
     sf::RectangleShape bg(sf::Vector2f(60.0f, bounds.height + 14.0f));
@@ -71,7 +65,6 @@ void drawRetroInput(sf::RenderWindow& window, sf::Text& text, bool isActive) {
     window.draw(text);
 }
 
-// Retro tło dla Dropdownów
 void drawRetroPanel(sf::RenderWindow& window, sf::RectangleShape& bg) {
     bg.setOutlineThickness(4.0f);
     bg.setOutlineColor(sf::Color(100, 100, 100));
@@ -89,7 +82,7 @@ void initUI() {
     titleMenu = sf::Text(L"USTAWIENIA GRY", font, 36); titleMenu.setPosition(20.0f, 20.0f);
     titleMenu.setFillColor(sf::Color::Yellow);
     
-    // Spacje wokół tekstu celowo sztucznie poszerzają klikalny przycisk!
+    // LEWA KOLUMNA (Trudność + główne przyciski)
     btnBeginner = sf::Text(L"  Początkujący (8x8)  ", font, 20);      btnBeginner.setPosition(20.0f, 80.0f);
     btnIntermediate = sf::Text(L"  Zaawansowany (16x16)  ", font, 20); btnIntermediate.setPosition(20.0f, 120.0f);
     btnExpert = sf::Text(L"  Ekspert (30x16)  ", font, 20);            btnExpert.setPosition(20.0f, 160.0f);
@@ -102,12 +95,12 @@ void initUI() {
     lblMines = sf::Text(L"Miny (max A*B/3):", font, 18); lblMines.setPosition(50.0f, 300.0f);
     valMine = sf::Text("15", font, 20);                  valMine.setPosition(250.0f, 298.0f);
 
-    btnSkinSelect = sf::Text(L"  Skórka: Classic \u25BC  ", font, 20); btnSkinSelect.setPosition(20.0f, 350.0f);
-    
-    btnStart = sf::Text(L"  >>> START GRY <<<  ", font, 26);    btnStart.setPosition(20.0f, 410.0f);
+    // Przeniesione na dół po lewej, by było wygodniej
+    btnStart = sf::Text(L"  >>> START GRY <<<  ", font, 26);    btnStart.setPosition(20.0f, 360.0f);
+    btnShowLeaderboard = sf::Text(L"  Tabela Wyników  ", font, 20); btnShowLeaderboard.setPosition(20.0f, 420.0f);
     btnQuit = sf::Text(L"  Wyjdź do Pulpitu  ", font, 20);      btnQuit.setPosition(20.0f, 480.0f);
-    btnShowLeaderboard = sf::Text(L"  Tabela Wyników  ", font, 20); btnShowLeaderboard.setPosition(420.0f, 410.0f);
 
+    // PRAWA KOLUMNA (Opcje + Skórki)
     float rightColX = 380.0f;
     lblOptionsTitle = sf::Text(L"DODATKOWE USTAWIENIA", font, 22); lblOptionsTitle.setPosition(rightColX, 80.0f);
     lblOptionsTitle.setFillColor(sf::Color::Yellow);
@@ -119,6 +112,9 @@ void initUI() {
     btnOptUndo = sf::Text(getCheckbox(optUndo) + sf::String(L"Rozbrój (Cofanie)  "), font, 18);            btnOptUndo.setPosition(rightColX, 280.0f);
     btnOptHints = sf::Text(getCheckbox(optHints) + sf::String(L"Podpowiedź (Kl. H)  "), font, 18);         btnOptHints.setPosition(rightColX, 320.0f);
 
+    // Lista skórek idealnie pod opcjami z prawej strony
+    btnSkinSelect = sf::Text(L"  Skórka: Classic \u25BC  ", font, 20); btnSkinSelect.setPosition(rightColX, 370.0f);
+    
     msgEnd = sf::Text("", font, 20); 
     txtTimer = sf::Text("", font, 20);
     txtMines = sf::Text("", font, 20);
@@ -159,11 +155,13 @@ void updateUI(sf::Vector2f mousePos, float offsetX) {
     btnSkinSelect.setString(L"  Skórka: " + skinName + L" \u25BC  ");
 
     if (currentState == GameState::Menu) {
-        bgSkinDropdown.setPosition(20.0f, 380.0f);
-        bgSkinDropdown.setSize(sf::Vector2f(180.0f, 110.0f));
-        optSkinClassic.setPosition(25.0f, 390.0f);
-        optSkinModern.setPosition(25.0f, 420.0f);
-        optSkinGreen.setPosition(25.0f, 450.0f);
+        // Pozycjonowanie listy w Menu Głównym na sztywno obok
+        btnSkinSelect.setPosition(380.0f, 370.0f);
+        bgSkinDropdown.setPosition(380.0f, 405.0f);
+        bgSkinDropdown.setSize(sf::Vector2f(200.0f, 110.0f));
+        optSkinClassic.setPosition(385.0f, 415.0f);
+        optSkinModern.setPosition(385.0f, 445.0f);
+        optSkinGreen.setPosition(385.0f, 475.0f);
 
         valCol.setString(strCustomCols + (activeInputField == 1 ? "_" : ""));
         valRow.setString(strCustomRows + (activeInputField == 2 ? "_" : ""));
@@ -208,7 +206,6 @@ void updateUI(sf::Vector2f mousePos, float offsetX) {
 
     } 
     else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
-        btnSkinSelect.setPosition(120.0f + offsetX, 12.0f);
         
         dropRestart.setPosition(15.0f, TOP_UI_HEIGHT + 15.0f);
         int optYOffset = 55;
@@ -245,7 +242,6 @@ void updateUI(sf::Vector2f mousePos, float offsetX) {
 }
 
 void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
-    // Podmienione na mroczne, retro tło
     window.clear(sf::Color(25, 25, 35)); 
     gameBg.setSize(sf::Vector2f(logicalW, logicalH));
     gameBg.setFillColor(sf::Color(60, 60, 60));
@@ -272,8 +268,8 @@ void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
         drawRetroButton(window, btnOptUndo, mousePos, optUndo);
         drawRetroButton(window, btnOptHints, mousePos, optHints);
 
-        drawRetroButton(window, btnStart, mousePos, false, 1); // 1 = Zielony Akcent
-        drawRetroButton(window, btnQuit, mousePos, false, 2);  // 2 = Czerwony Akcent
+        drawRetroButton(window, btnStart, mousePos, false, 1); 
+        drawRetroButton(window, btnQuit, mousePos, false, 2);  
         drawRetroButton(window, btnShowLeaderboard, mousePos, false);
         drawRetroButton(window, btnSkinSelect, mousePos, isSkinDropdownOpen); 
 
@@ -313,7 +309,6 @@ void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
         window.draw(topBar);
         
         drawRetroButton(window, btnOptions, mousePos, isDropdownOpen);
-        drawRetroButton(window, btnSkinSelect, mousePos, isSkinDropdownOpen);
 
         txtTimer.setString(sf::String(L"Czas: ") + std::to_string(elapsedTime) + sf::String(L"s"));
         txtTimer.setPosition(logicalW / 2.0f - 40.0f, 12.0f);
@@ -345,7 +340,6 @@ void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
             drawRetroPanel(window, dropdownBg);
             drawRetroButton(window, dropRestart, mousePos);
             if (currentState == GameState::GameOver && optUndo) {
-                // Rysowanie specjalnego przycisku rozbrojenia (czerwony)
                 drawRetroButton(window, dropUndo, mousePos, false, 2); 
             }
             drawRetroButton(window, dropSkin, mousePos, isSkinDropdownOpen);
