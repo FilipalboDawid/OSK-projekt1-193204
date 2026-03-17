@@ -204,7 +204,7 @@ void updateUI(sf::Vector2f mousePos, float offsetX) {
     } 
     else if (currentState == GameState::Playing || currentState == GameState::GameOver || currentState == GameState::Paused) {
         
-        btnPause.setPosition(105.0f, 12.0f); // Naprawiona pozycja
+        btnPause.setPosition(105.0f, 12.0f);
         
         dropRestart.setPosition(15.0f, TOP_UI_HEIGHT + 15.0f);
         int optYOffset = 55;

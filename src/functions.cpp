@@ -14,7 +14,7 @@ bool loadTextures(const std::string& skinName) {
         !texEmpty.loadFromFile(path + "empty.png") ||
         !texMine.loadFromFile(path + "mine.png") ||
         !texFlag.loadFromFile(path + "flag.png") ||
-        !texQuestion.loadFromFile(path + "question.png")) { // Ładowanie znaku zapytania!
+        !texQuestion.loadFromFile(path + "question.png")) {
         std::cerr << "Blad: Nie znaleziono tekstur w " << path << "\n";
         return false;
     }
@@ -104,10 +104,9 @@ void clampCustomSettings() {
     columns = c; rows = r; minesCount = m;
 }
 
-// Tylko czyści planszę
 void initGame() {
     grid.assign(columns * rows, Cell());
-    previousGrid = grid; // Reset kopii zapasowej
+    previousGrid = grid;
     currentState = GameState::Playing;
     flagsPlaced = 0;
     prevFlagsPlaced = 0;
@@ -116,14 +115,12 @@ void initGame() {
     isDropdownOpen = false; 
 }
 
-// Zapis przed niebezpiecznym ruchem
 void saveState() {
     if (!optUndo) return;
     previousGrid = grid;
     prevFlagsPlaced = flagsPlaced;
 }
 
-// Przywraca stan przed wdepnięciem na bombę
 void undoState() {
     if (!optUndo || previousGrid.empty()) return;
     grid = previousGrid;
@@ -131,7 +128,6 @@ void undoState() {
     currentState = GameState::Playing;
 }
 
-// Losuje miny z pominięciem bezpiecznego pola (i okolicy, jeśli włączono Opcję)
 void generateMines(int safeX, int safeY) {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -146,7 +142,6 @@ void generateMines(int safeX, int safeY) {
 
         bool isSafe = false;
         if (rx == safeX && ry == safeY) isSafe = true;
-        // Jeśli Ruch otwierający jest aktywny, cała okolica pierwszego kliknięcia jest bez bomb
         if (optOpeningMove && std::abs(rx - safeX) <= 1 && std::abs(ry - safeY) <= 1) isSafe = true;
 
         if (!grid[idx].isMine && !isSafe) {
@@ -155,7 +150,6 @@ void generateMines(int safeX, int safeY) {
         }
     }
 
-    // Obliczanie cyferek dla reszty
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < columns; ++x) {
             if (grid[getIndex(x, y)].isMine) continue;
@@ -173,7 +167,6 @@ void generateMines(int safeX, int safeY) {
 void revealCell(int x, int y) {
     if (!isValid(x, y)) return;
     int idx = getIndex(x, y);
-    // Znak zapytania też blokuje odkrycie!
     if (grid[idx].isRevealed || grid[idx].flagState != 0) return;
 
     grid[idx].isRevealed = true;
@@ -187,7 +180,6 @@ void revealCell(int x, int y) {
     }
 }
 
-// Funkcja Bezpiecznej Okolicy (Klik w cyfrę)
 void chordCell(int x, int y) {
     int idx = getIndex(x, y);
     if (!grid[idx].isRevealed || grid[idx].adjacentMines == 0) return;
@@ -202,7 +194,7 @@ void chordCell(int x, int y) {
     }
 
     if (nearbyFlags == grid[idx].adjacentMines) {
-        saveState(); // Zapisujemy stan przed masowym odkryciem
+        saveState();
         for (int dy = -1; dy <= 1; ++dy) {
             for (int dx = -1; dx <= 1; ++dx) {
                 if (isValid(x + dx, y + dy)) {
@@ -222,7 +214,6 @@ void chordCell(int x, int y) {
     }
 }
 
-// Odkrywa wszystko, gdy uznaliśmy, że zaznaczyliśmy poprawnie wszystkie bomby
 void openRemainingSafeCells() {
     if (minesCount - flagsPlaced != 0) return;
     saveState();
@@ -256,7 +247,6 @@ void revealAllMines() {
     }
 }
 
-// NOWOŚĆ: Bezpośrednie ustawianie skórki
 void setSkin(const std::string& skinName) {
     activeSkin = skinName;
     loadTextures(activeSkin);
@@ -266,5 +256,5 @@ void clearLeaderboard() {
     for (int i = 0; i < 4; ++i) {
         leaderboards[i].clear();
     }
-    saveLeaderboard(); // Zapisanie pustych tablic nadpisze plik txt
+    saveLeaderboard();
 }

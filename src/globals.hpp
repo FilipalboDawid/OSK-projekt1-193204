@@ -44,7 +44,6 @@ extern sf::Texture texNumbers[8];
 extern sf::Font font;
 extern std::vector<ScoreEntry> leaderboards[4];
 
-// --- ELEMENTY UI ---
 extern sf::Text titleMenu, btnBeginner, btnIntermediate, btnExpert, btnCustom;
 extern sf::Text lblCols, valCol, lblRows, valRow, lblMines, valMine;
 extern sf::Text btnStart, btnShowLeaderboard, btnQuit;
