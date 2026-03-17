@@ -22,7 +22,7 @@ struct ScoreEntry {
 enum class GameState { Menu, Playing, GameOver, Victory, EnterName, Leaderboard };
 
 extern int columns, rows, minesCount, flagsPlaced, elapsedTime;
-extern bool isFirstClick, isFullscreen, isDropdownOpen;
+extern bool isFirstClick, isFullscreen, isDropdownOpen, isSkinDropdownOpen; 
 extern float logicalW, logicalH;
 extern sf::Clock gameClock;
 
@@ -46,25 +46,18 @@ extern std::vector<ScoreEntry> leaderboards[4];
 // --- ELEMENTY UI ---
 extern sf::Text titleMenu, btnBeginner, btnIntermediate, btnExpert, btnCustom;
 extern sf::Text lblCols, valCol, lblRows, valRow, lblMines, valMine;
-extern sf::Text btnSkinClassic, btnSkinModern, btnSkinGreen, btnStart, btnShowLeaderboard;
+extern sf::Text btnStart, btnShowLeaderboard, btnQuit;
 extern sf::Text msgEnd, txtTimer, txtMines, btnOptions;
-extern sf::Text dropRestart, dropUndo, dropSkin, dropFullscreen, dropMenu;
+extern sf::Text dropRestart, dropUndo, dropSkin, dropFullscreen, dropMenu, dropQuit;
 extern sf::RectangleShape dropdownBg, gameBg;
 extern sf::Text txtTitle, txtSubtitle, btnReturnMenu;
 
 extern sf::Text lblOptionsTitle;
 extern sf::Text btnOptOpening, btnOptQuestion, btnOptChording, btnOptRemaining, btnOptUndo, btnOptHints;
 
-// NOWOŚĆ: Zmienne do dymków z podpowiedziami (Tooltip)
 extern sf::Text tooltipText;
 extern sf::RectangleShape tooltipBg;
 extern bool showTooltip;
 
-// --- ELEMENTY UI ---
-extern sf::Text titleMenu, btnBeginner, btnIntermediate, btnExpert, btnCustom;
-extern sf::Text lblCols, valCol, lblRows, valRow, lblMines, valMine;
-extern sf::Text btnSkinClassic, btnSkinModern, btnSkinGreen, btnStart, btnShowLeaderboard, btnQuit; // DODANO btnQuit
-extern sf::Text msgEnd, txtTimer, txtMines, btnOptions;
-extern sf::Text dropRestart, dropUndo, dropSkin, dropFullscreen, dropMenu, dropQuit; // DODANO dropQuit
-extern sf::RectangleShape dropdownBg, gameBg;
-extern sf::Text txtTitle, txtSubtitle, btnReturnMenu;
+extern sf::Text btnSkinSelect, optSkinClassic, optSkinModern, optSkinGreen;
+extern sf::RectangleShape bgSkinDropdown;

@@ -14,12 +14,12 @@ void applyWindowSize(sf::RenderWindow& window, unsigned int w, unsigned int h);
 void clampCustomSettings();
 
 void initGame();
-void generateMines(int safeX, int safeY); // NOWA
-void saveState();                         // NOWA (do cofania)
-void undoState();                         // NOWA (do cofania)
+void generateMines(int safeX, int safeY); 
+void saveState();                         
+void undoState();                         
 void revealCell(int x, int y);
-void chordCell(int x, int y);             // NOWA (bezpieczna okolica)
-void openRemainingSafeCells();            // NOWA (klik w licznik)
+void chordCell(int x, int y);             
+void openRemainingSafeCells();            
 void checkVictory();
 void revealAllMines();
-void cycleSkin();
+void setSkin(const std::string& skinName); // ZMIENIONO!

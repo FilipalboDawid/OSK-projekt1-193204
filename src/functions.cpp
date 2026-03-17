@@ -78,8 +78,8 @@ void adjustView(sf::RenderWindow& window) {
 
 void toggleFullscreen(sf::RenderWindow& window) {
     isFullscreen = !isFullscreen;
-    if (isFullscreen) window.create(sf::VideoMode::getDesktopMode(), "Minesweeper C++", sf::Style::Fullscreen);
-    else window.create(sf::VideoMode(logicalW, logicalH), "Minesweeper C++", sf::Style::Default);
+    if (isFullscreen) window.create(sf::VideoMode::getDesktopMode(), "Saper", sf::Style::Fullscreen);
+    else window.create(sf::VideoMode(logicalW, logicalH), "Saper", sf::Style::Default);
     window.setFramerateLimit(60);
     adjustView(window);
 }
@@ -256,9 +256,8 @@ void revealAllMines() {
     }
 }
 
-void cycleSkin() {
-    if (activeSkin == "classic") activeSkin = "modern";
-    else if (activeSkin == "modern") activeSkin = "green";
-    else activeSkin = "classic";
+// NOWOŚĆ: Bezpośrednie ustawianie skórki
+void setSkin(const std::string& skinName) {
+    activeSkin = skinName;
     loadTextures(activeSkin);
 }

@@ -33,16 +33,17 @@ std::string strCustomMines = "15";
 int activeInputField = 0; 
 std::string playerName = "";
 bool isDropdownOpen = false; 
+bool isSkinDropdownOpen = false; 
 
 sf::Texture texHidden, texEmpty, texMine, texFlag, texQuestion;
 sf::Texture texNumbers[8];
 sf::Font font;
 std::vector<ScoreEntry> leaderboards[4];
 
-// --- ELEMENTY UI (tylko jedna kopia!) ---
+// --- ELEMENTY UI ---
 sf::Text titleMenu, btnBeginner, btnIntermediate, btnExpert, btnCustom;
 sf::Text lblCols, valCol, lblRows, valRow, lblMines, valMine;
-sf::Text btnSkinClassic, btnSkinModern, btnSkinGreen, btnStart, btnShowLeaderboard, btnQuit;
+sf::Text btnStart, btnShowLeaderboard, btnQuit;
 sf::Text msgEnd, txtTimer, txtMines, btnOptions;
 sf::Text dropRestart, dropUndo, dropSkin, dropFullscreen, dropMenu, dropQuit;
 sf::RectangleShape dropdownBg, gameBg;
@@ -54,3 +55,6 @@ sf::Text btnOptOpening, btnOptQuestion, btnOptChording, btnOptRemaining, btnOptU
 sf::Text tooltipText;
 sf::RectangleShape tooltipBg;
 bool showTooltip = false;
+
+sf::Text btnSkinSelect, optSkinClassic, optSkinModern, optSkinGreen;
+sf::RectangleShape bgSkinDropdown;

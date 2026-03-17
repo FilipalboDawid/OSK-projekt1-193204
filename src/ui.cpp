@@ -26,12 +26,7 @@ void initUI() {
     lblMines = sf::Text(L"Miny (max A*B/3):", font, 18); lblMines.setPosition(50.0f, 250.0f);
     valMine = sf::Text("15", font, 20);                  valMine.setPosition(250.0f, 248.0f);
 
-    btnSkinClassic = sf::Text(L"[ Skórka: Classic ]", font, 20); btnSkinClassic.setPosition(20.0f, 320.0f);
-    btnSkinModern = sf::Text(L"[ Skórka: Modern ]", font, 20);   btnSkinModern.setPosition(220.0f, 320.0f);
-    btnSkinGreen = sf::Text(L"[ Skórka: Green ]", font, 20);     btnSkinGreen.setPosition(420.0f, 320.0f);
-    
     btnStart = sf::Text(L">>> START GRY <<<", font, 32);         btnStart.setPosition(20.0f, 380.0f);
-    // NOWOŚĆ: Przycisk wyjścia w menu głównym
     btnQuit = sf::Text(L"[ Wyjdź z Gry ]", font, 20);            btnQuit.setPosition(20.0f, 440.0f);
     btnShowLeaderboard = sf::Text(L"[ TABELA WYNIKÓW ]", font, 20); btnShowLeaderboard.setPosition(420.0f, 390.0f);
 
@@ -51,18 +46,22 @@ void initUI() {
     txtMines = sf::Text("", font, 20);
     btnOptions = sf::Text(L"[ Opcje ]", font, 20); btnOptions.setPosition(10.0f, 12.0f);
 
-    dropRestart = sf::Text(L"Restart", font, 18);   dropRestart.setPosition(15.0f, TOP_UI_HEIGHT + 10.0f);
-    dropUndo = sf::Text(L"-> Cofnij Ruch", font, 18); dropUndo.setPosition(15.0f, TOP_UI_HEIGHT + 40.0f); dropUndo.setFillColor(sf::Color::Cyan);
-    dropSkin = sf::Text(L"Zmień Skórkę", font, 18); dropSkin.setPosition(15.0f, TOP_UI_HEIGHT + 70.0f);
-    dropFullscreen = sf::Text(L"Pełny Ekran (F11)", font, 18); dropFullscreen.setPosition(15.0f, TOP_UI_HEIGHT + 100.0f);
-    dropMenu = sf::Text(L"Wróć do Menu", font, 18); dropMenu.setPosition(15.0f, TOP_UI_HEIGHT + 130.0f);
-    // NOWOŚĆ: Wyjście z gry w rozwijanym menu
-    dropQuit = sf::Text(L"Wyjdź z Gry", font, 18); dropQuit.setPosition(15.0f, TOP_UI_HEIGHT + 160.0f);
+    dropRestart = sf::Text(L"Restart", font, 18);   
+    dropUndo = sf::Text(L"-> Cofnij Ruch", font, 18); dropUndo.setFillColor(sf::Color::Cyan);
+    // NOWOŚĆ: Strzałka w prawo oznaczająca podmenu (\u25BA)
+    dropSkin = sf::Text(L"Zmień Skórkę \u25BA", font, 18); 
+    dropFullscreen = sf::Text(L"Pełny Ekran (F11)", font, 18); 
+    dropMenu = sf::Text(L"Wróć do Menu", font, 18); 
+    dropQuit = sf::Text(L"Wyjdź z Gry", font, 18); 
     
-    // Zwiększone tło, żeby zmieścić nowy tekst
-    dropdownBg.setSize(sf::Vector2f(200.0f, 190.0f));
     dropdownBg.setFillColor(sf::Color(50, 50, 50, 240)); 
     dropdownBg.setPosition(10.0f, TOP_UI_HEIGHT);
+
+    btnSkinSelect = sf::Text(L"[ Skórka: Classic \u25BC ]", font, 20);
+    optSkinClassic = sf::Text(L"Classic", font, 18);
+    optSkinModern = sf::Text(L"Modern", font, 18);
+    optSkinGreen = sf::Text(L"Green", font, 18);
+    bgSkinDropdown.setFillColor(sf::Color(50, 50, 50, 240));
 
     txtTitle = sf::Text("", font, 40); txtTitle.setPosition(50.0f, 50.0f);
     txtSubtitle = sf::Text("", font, 24); txtSubtitle.setPosition(50.0f, 120.0f);
@@ -75,7 +74,64 @@ void initUI() {
     tooltipBg.setOutlineColor(sf::Color::Yellow);
 }
 
-void updateUI(sf::Vector2f mousePos) {
+void updateUI(sf::Vector2f mousePos, float offsetX) {
+    sf::String skinName = L"Classic";
+    if (activeSkin == "modern") skinName = L"Modern";
+    else if (activeSkin == "green") skinName = L"Green";
+    btnSkinSelect.setString(L"[ Skórka: " + skinName + L" \u25BC ]");
+
+    if (currentState == GameState::Menu) {
+        btnSkinSelect.setPosition(20.0f, 320.0f);
+        bgSkinDropdown.setPosition(20.0f, 350.0f);
+        bgSkinDropdown.setSize(sf::Vector2f(160.0f, 100.0f));
+        optSkinClassic.setPosition(25.0f, 360.0f);
+        optSkinModern.setPosition(25.0f, 390.0f);
+        optSkinGreen.setPosition(25.0f, 420.0f);
+
+        styleButton(btnSkinSelect, isSkinDropdownOpen, mousePos);
+    } else {
+        // NOWOŚĆ: Dynamiczne układanie Menu Opcji w trakcie gry
+        dropRestart.setPosition(15.0f, TOP_UI_HEIGHT + 10.0f);
+        int optYOffset = 40;
+        if (currentState == GameState::GameOver && optUndo) {
+            dropUndo.setPosition(15.0f, TOP_UI_HEIGHT + optYOffset); optYOffset += 30;
+        }
+        
+        dropSkin.setPosition(15.0f, TOP_UI_HEIGHT + optYOffset); 
+        float skinY = TOP_UI_HEIGHT + optYOffset; // Zapisujemy wysokość dla podmenu
+        optYOffset += 30;
+        
+        dropFullscreen.setPosition(15.0f, TOP_UI_HEIGHT + optYOffset); optYOffset += 30;
+        dropMenu.setPosition(15.0f, TOP_UI_HEIGHT + optYOffset); optYOffset += 30;
+        dropQuit.setPosition(15.0f, TOP_UI_HEIGHT + optYOffset); optYOffset += 30;
+        
+        dropdownBg.setSize(sf::Vector2f(200.0f, optYOffset + 10.0f));
+
+        // Pozycjonowanie Podmenu Skórek obok głównego menu
+        bgSkinDropdown.setPosition(210.0f, skinY - 10.0f); 
+        bgSkinDropdown.setSize(sf::Vector2f(120.0f, 100.0f));
+        optSkinClassic.setPosition(215.0f, skinY);
+        optSkinModern.setPosition(215.0f, skinY + 30.0f);
+        optSkinGreen.setPosition(215.0f, skinY + 60.0f);
+
+        // Automatyczne otwieranie podmenu po najechaniu myszką
+        if (isDropdownOpen) {
+            if (dropSkin.getGlobalBounds().contains(mousePos) || bgSkinDropdown.getGlobalBounds().contains(mousePos)) {
+                isSkinDropdownOpen = true;
+            } else {
+                isSkinDropdownOpen = false;
+            }
+        } else {
+            isSkinDropdownOpen = false;
+        }
+    }
+
+    if (isSkinDropdownOpen) {
+        styleButton(optSkinClassic, activeSkin == "classic", mousePos);
+        styleButton(optSkinModern, activeSkin == "modern", mousePos);
+        styleButton(optSkinGreen, activeSkin == "green", mousePos);
+    }
+
     if (currentState == GameState::Menu) {
         styleButton(btnBeginner, selectedDifficulty == 0, mousePos);
         styleButton(btnIntermediate, selectedDifficulty == 1, mousePos);
@@ -86,11 +142,8 @@ void updateUI(sf::Vector2f mousePos) {
         valRow.setFillColor(activeInputField == 2 ? sf::Color::Red : sf::Color::White);
         valMine.setFillColor(activeInputField == 3 ? sf::Color::Red : sf::Color::White);
 
-        styleButton(btnSkinClassic, activeSkin == "classic", mousePos);
-        styleButton(btnSkinModern, activeSkin == "modern", mousePos);
-        styleButton(btnSkinGreen, activeSkin == "green", mousePos);
         styleButton(btnStart, false, mousePos);
-        styleButton(btnQuit, false, mousePos); // Stylizowanie nowego przycisku
+        styleButton(btnQuit, false, mousePos); 
         styleButton(btnShowLeaderboard, false, mousePos);
 
         valCol.setString(strCustomCols + (activeInputField == 1 ? "_" : ""));
@@ -112,41 +165,35 @@ void updateUI(sf::Vector2f mousePos) {
         styleButton(btnOptHints, false, mousePos);
 
         showTooltip = false;
-        if (btnOptOpening.getGlobalBounds().contains(mousePos)) {
-            tooltipText.setString(L"Pierwszy ruch gwarantuje puste pole\ni otwiera bezpieczny obszar wokół.");
-            showTooltip = true;
-        } else if (btnOptQuestion.getGlobalBounds().contains(mousePos)) {
-            tooltipText.setString(L"Kliknij prawym ponownie na flagę,\nby zmienić ją w znak zapytania (?).");
-            showTooltip = true;
-        } else if (btnOptChording.getGlobalBounds().contains(mousePos)) {
-            tooltipText.setString(L"Kliknij w odkrytą cyfrę, jeśli wokół niej\njest poprawna liczba flag, by otworzyć resztę.");
-            showTooltip = true;
-        } else if (btnOptRemaining.getGlobalBounds().contains(mousePos)) {
-            tooltipText.setString(L"Gdy oflagujesz wszystkie miny, kliknij\nw licznik na górze, by odkryć całą planszę.");
-            showTooltip = true;
-        } else if (btnOptUndo.getGlobalBounds().contains(mousePos)) {
-            tooltipText.setString(L"Zapisuje planszę przed ryzykownym ruchem.\nPo wybuchu możesz cofnąć czas w menu Opcje.");
-            showTooltip = true;
-        } else if (btnOptHints.getGlobalBounds().contains(mousePos)) {
-            tooltipText.setString(L"Najedź na pole i wciśnij 'H', by oflagować\nbombę lub bezpiecznie odkryć puste pole.");
-            showTooltip = true;
+        if (!isSkinDropdownOpen) { 
+            if (btnOptOpening.getGlobalBounds().contains(mousePos)) {
+                tooltipText.setString(L"Pierwszy ruch gwarantuje puste pole\ni otwiera bezpieczny obszar wokół."); showTooltip = true;
+            } else if (btnOptQuestion.getGlobalBounds().contains(mousePos)) {
+                tooltipText.setString(L"Kliknij prawym ponownie na flagę,\nby zmienić ją w znak zapytania (?)."); showTooltip = true;
+            } else if (btnOptChording.getGlobalBounds().contains(mousePos)) {
+                tooltipText.setString(L"Kliknij w odkrytą cyfrę, jeśli wokół niej\njest poprawna liczba flag, by otworzyć resztę."); showTooltip = true;
+            } else if (btnOptRemaining.getGlobalBounds().contains(mousePos)) {
+                tooltipText.setString(L"Gdy oflagujesz wszystkie miny, kliknij\nw licznik na górze, by odkryć całą planszę."); showTooltip = true;
+            } else if (btnOptUndo.getGlobalBounds().contains(mousePos)) {
+                tooltipText.setString(L"Zapisuje planszę przed ryzykownym ruchem.\nPo wybuchu możesz cofnąć czas w menu Opcje."); showTooltip = true;
+            } else if (btnOptHints.getGlobalBounds().contains(mousePos)) {
+                tooltipText.setString(L"Najedź na pole i wciśnij 'H', by oflagować\nbombę lub bezpiecznie odkryć puste pole."); showTooltip = true;
+            }
         }
 
         if (showTooltip) {
             sf::FloatRect textBounds = tooltipText.getLocalBounds();
             float bgW = textBounds.width + 16.0f;
             float bgH = textBounds.height + 12.0f;
-            
-            float posX = mousePos.x + 15.0f;
-            float posY = mousePos.y + 15.0f;
+            float posX = mousePos.x + 15.0f; float posY = mousePos.y + 15.0f;
 
             if (posX + bgW > logicalW) posX = mousePos.x - bgW - 5.0f;
             if (posY + bgH > logicalH) posY = mousePos.y - bgH - 5.0f;
 
-            tooltipBg.setSize(sf::Vector2f(bgW, bgH));
-            tooltipBg.setPosition(posX, posY);
+            tooltipBg.setSize(sf::Vector2f(bgW, bgH)); tooltipBg.setPosition(posX, posY);
             tooltipText.setPosition(posX + 8.0f, posY + 4.0f);
         }
+
     } 
     else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
         styleButton(btnOptions, isDropdownOpen, mousePos); 
@@ -155,10 +202,10 @@ void updateUI(sf::Vector2f mousePos) {
         
         if (isDropdownOpen) {
             styleButton(dropRestart, false, mousePos);
-            styleButton(dropSkin, false, mousePos);
+            styleButton(dropSkin, isSkinDropdownOpen, mousePos); // Podświetla się na zielono jak najedziesz!
             styleButton(dropFullscreen, false, mousePos);
             styleButton(dropMenu, false, mousePos);
-            styleButton(dropQuit, false, mousePos); // Stylizowanie nowego wyjścia
+            styleButton(dropQuit, false, mousePos); 
             if (currentState == GameState::GameOver && optUndo) {
                 if (dropUndo.getGlobalBounds().contains(mousePos)) dropUndo.setFillColor(sf::Color::Yellow);
                 else dropUndo.setFillColor(sf::Color::Cyan); 
@@ -190,14 +237,16 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
         window.draw(btnOptOpening); window.draw(btnOptQuestion); window.draw(btnOptChording);
         window.draw(btnOptRemaining); window.draw(btnOptUndo); window.draw(btnOptHints);
 
-        window.draw(btnSkinClassic); window.draw(btnSkinModern); window.draw(btnSkinGreen);
         window.draw(btnStart);
-        window.draw(btnQuit); // Rysowanie wyjścia
+        window.draw(btnQuit); 
         window.draw(btnShowLeaderboard);
+        window.draw(btnSkinSelect); 
 
-        if (showTooltip) {
-            window.draw(tooltipBg);
-            window.draw(tooltipText);
+        if (showTooltip) { window.draw(tooltipBg); window.draw(tooltipText); }
+
+        if (isSkinDropdownOpen) {
+            window.draw(bgSkinDropdown);
+            window.draw(optSkinClassic); window.draw(optSkinModern); window.draw(optSkinGreen);
         }
     } 
     else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
@@ -226,6 +275,7 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
         topBar.setFillColor(sf::Color(40, 40, 40));
         window.draw(topBar);
         window.draw(btnOptions); 
+        // USUNIĘTO RYSOWANIE btnSkinSelect Z Paska Gry!
 
         txtTimer.setString(sf::String(L"Czas: ") + std::to_string(elapsedTime) + sf::String(L"s"));
         txtTimer.setPosition(logicalW / 2.0f - 40.0f, 12.0f);
@@ -237,12 +287,8 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
 
         if (currentState == GameState::GameOver) {
             msgEnd.setCharacterSize(18); 
-            
-            if (optUndo) {
-                msgEnd.setString(L"PRZEGRANA! Kliknij by zagrać\nlub wejdź w Opcje by cofnąć");
-            } else {
-                msgEnd.setString(L"PRZEGRANA! Kliknij by zagrać");
-            }
+            if (optUndo) msgEnd.setString(L"PRZEGRANA! Kliknij by zagrać\nlub wejdź w Opcje by cofnąć");
+            else msgEnd.setString(L"PRZEGRANA! Kliknij by zagrać");
 
             sf::FloatRect bounds = msgEnd.getLocalBounds();
             float overlayHeight = bounds.height + 40.0f; 
@@ -263,50 +309,36 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
             window.draw(dropSkin); 
             window.draw(dropFullscreen); 
             window.draw(dropMenu);
-            window.draw(dropQuit); // Rysowanie wyjścia
+            window.draw(dropQuit); 
+        }
+
+        // Rysujemy podmenu Skórek obok (musi być na końcu, żeby było na wierzchu)
+        if (isSkinDropdownOpen && isDropdownOpen) {
+            window.draw(bgSkinDropdown);
+            window.draw(optSkinClassic); window.draw(optSkinModern); window.draw(optSkinGreen);
         }
     }
     else if (currentState == GameState::EnterName) {
         applyWindowSize(window, 750, 550); 
-        txtTitle.setString(L"WYGRANA!");
-        txtTitle.setFillColor(sf::Color::Green);
-        
-        sf::String subText = L"Czas: ";
-        subText += std::to_string(elapsedTime);
-        subText += L"s\nWpisz swoje imię (i naciśnij ENTER):\n\n> ";
-        subText += playerName;
-        subText += L"_";
-        
+        txtTitle.setString(L"WYGRANA!"); txtTitle.setFillColor(sf::Color::Green);
+        sf::String subText = L"Czas: "; subText += std::to_string(elapsedTime);
+        subText += L"s\nWpisz swoje imię (i naciśnij ENTER):\n\n> "; subText += playerName; subText += L"_";
         txtSubtitle.setString(subText);
-        window.draw(txtTitle);
-        window.draw(txtSubtitle);
-        window.draw(btnReturnMenu);
+        window.draw(txtTitle); window.draw(txtSubtitle); window.draw(btnReturnMenu);
     }
     else if (currentState == GameState::Leaderboard) {
         applyWindowSize(window, 750, 550);
-        txtTitle.setString(L"TABELA WYNIKÓW");
-        txtTitle.setFillColor(sf::Color::White);
-        window.draw(txtTitle);
+        txtTitle.setString(L"TABELA WYNIKÓW"); txtTitle.setFillColor(sf::Color::White); window.draw(txtTitle);
 
         sf::String diffNames[] = {L"Początkujący", L"Zaawansowany", L"Ekspert", L"Własna Plansza"};
         for (int i = 0; i < 4; ++i) {
-            sf::Text header(diffNames[i], font, 20);
-            header.setFillColor(sf::Color::Yellow);
-            header.setPosition(50.0f, 120.0f + i * 90.0f);
-            window.draw(header);
-
-            sf::String scoresText = L"";
-            int limit = std::min((int)leaderboards[i].size(), 3); 
+            sf::Text header(diffNames[i], font, 20); header.setFillColor(sf::Color::Yellow); header.setPosition(50.0f, 120.0f + i * 90.0f); window.draw(header);
+            sf::String scoresText = L""; int limit = std::min((int)leaderboards[i].size(), 3); 
             if (limit == 0) scoresText = L"Brak wyników.";
             for (int j = 0; j < limit; ++j) {
-                scoresText += std::to_string(j+1) + ". ";
-                scoresText += leaderboards[i][j].name;
-                scoresText += L" - ";
-                scoresText += std::to_string(leaderboards[i][j].time) + "s\n";
+                scoresText += std::to_string(j+1) + ". "; scoresText += leaderboards[i][j].name; scoresText += L" - "; scoresText += std::to_string(leaderboards[i][j].time) + "s\n";
             }
-            sf::Text scoresList(scoresText, font, 16);
-            scoresList.setPosition(50.0f, 150.0f + i * 90.0f);
-            window.draw(scoresList);
+            sf::Text scoresList(scoresText, font, 16); scoresList.setPosition(50.0f, 150.0f + i * 90.0f); window.draw(scoresList);
         }
         window.draw(btnReturnMenu);
     }
