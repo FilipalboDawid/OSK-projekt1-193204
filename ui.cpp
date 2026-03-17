@@ -31,6 +31,8 @@ void initUI() {
     btnSkinGreen = sf::Text(L"[ Skórka: Green ]", font, 20);     btnSkinGreen.setPosition(420.0f, 320.0f);
     
     btnStart = sf::Text(L">>> START GRY <<<", font, 32);         btnStart.setPosition(20.0f, 380.0f);
+    // NOWOŚĆ: Przycisk wyjścia w menu głównym
+    btnQuit = sf::Text(L"[ Wyjdź z Gry ]", font, 20);            btnQuit.setPosition(20.0f, 440.0f);
     btnShowLeaderboard = sf::Text(L"[ TABELA WYNIKÓW ]", font, 20); btnShowLeaderboard.setPosition(420.0f, 390.0f);
 
     float rightColX = 380.0f;
@@ -54,8 +56,11 @@ void initUI() {
     dropSkin = sf::Text(L"Zmień Skórkę", font, 18); dropSkin.setPosition(15.0f, TOP_UI_HEIGHT + 70.0f);
     dropFullscreen = sf::Text(L"Pełny Ekran (F11)", font, 18); dropFullscreen.setPosition(15.0f, TOP_UI_HEIGHT + 100.0f);
     dropMenu = sf::Text(L"Wróć do Menu", font, 18); dropMenu.setPosition(15.0f, TOP_UI_HEIGHT + 130.0f);
+    // NOWOŚĆ: Wyjście z gry w rozwijanym menu
+    dropQuit = sf::Text(L"Wyjdź z Gry", font, 18); dropQuit.setPosition(15.0f, TOP_UI_HEIGHT + 160.0f);
     
-    dropdownBg.setSize(sf::Vector2f(200.0f, 160.0f));
+    // Zwiększone tło, żeby zmieścić nowy tekst
+    dropdownBg.setSize(sf::Vector2f(200.0f, 190.0f));
     dropdownBg.setFillColor(sf::Color(50, 50, 50, 240)); 
     dropdownBg.setPosition(10.0f, TOP_UI_HEIGHT);
 
@@ -85,6 +90,7 @@ void updateUI(sf::Vector2f mousePos) {
         styleButton(btnSkinModern, activeSkin == "modern", mousePos);
         styleButton(btnSkinGreen, activeSkin == "green", mousePos);
         styleButton(btnStart, false, mousePos);
+        styleButton(btnQuit, false, mousePos); // Stylizowanie nowego przycisku
         styleButton(btnShowLeaderboard, false, mousePos);
 
         valCol.setString(strCustomCols + (activeInputField == 1 ? "_" : ""));
@@ -141,7 +147,6 @@ void updateUI(sf::Vector2f mousePos) {
             tooltipBg.setPosition(posX, posY);
             tooltipText.setPosition(posX + 8.0f, posY + 4.0f);
         }
-
     } 
     else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
         styleButton(btnOptions, isDropdownOpen, mousePos); 
@@ -153,6 +158,7 @@ void updateUI(sf::Vector2f mousePos) {
             styleButton(dropSkin, false, mousePos);
             styleButton(dropFullscreen, false, mousePos);
             styleButton(dropMenu, false, mousePos);
+            styleButton(dropQuit, false, mousePos); // Stylizowanie nowego wyjścia
             if (currentState == GameState::GameOver && optUndo) {
                 if (dropUndo.getGlobalBounds().contains(mousePos)) dropUndo.setFillColor(sf::Color::Yellow);
                 else dropUndo.setFillColor(sf::Color::Cyan); 
@@ -186,6 +192,7 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
 
         window.draw(btnSkinClassic); window.draw(btnSkinModern); window.draw(btnSkinGreen);
         window.draw(btnStart);
+        window.draw(btnQuit); // Rysowanie wyjścia
         window.draw(btnShowLeaderboard);
 
         if (showTooltip) {
@@ -228,11 +235,9 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
         txtMines.setPosition(logicalW - 120.0f, 12.0f);
         window.draw(txtMines);
 
-        // --- POPRAWKA EKRANU KOŃCA GRY ---
         if (currentState == GameState::GameOver) {
-            msgEnd.setCharacterSize(18); // Zmniejszamy minimalnie czcionkę
+            msgEnd.setCharacterSize(18); 
             
-            // Przełamanie na dwie linijki za pomocą \n
             if (optUndo) {
                 msgEnd.setString(L"PRZEGRANA! Kliknij by zagrać\nlub wejdź w Opcje by cofnąć");
             } else {
@@ -240,15 +245,13 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
             }
 
             sf::FloatRect bounds = msgEnd.getLocalBounds();
-            float overlayHeight = bounds.height + 40.0f; // Dynamiczna wysokość czarnego paska
+            float overlayHeight = bounds.height + 40.0f; 
 
             sf::RectangleShape overlay(sf::Vector2f(logicalW, overlayHeight));
             overlay.setFillColor(sf::Color(0, 0, 0, 200));
-            // Centrowanie ciemnego paska w pionie
             overlay.setPosition(0.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - overlayHeight / 2.0f);
             window.draw(overlay);
 
-            // Centrowanie tekstu idealnie na środku planszy
             msgEnd.setPosition(logicalW / 2.0f - bounds.width / 2.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - bounds.height / 2.0f - 5.0f);
             window.draw(msgEnd);
         }
@@ -258,7 +261,9 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
             window.draw(dropRestart); 
             if (currentState == GameState::GameOver && optUndo) window.draw(dropUndo);
             window.draw(dropSkin); 
-            window.draw(dropFullscreen); window.draw(dropMenu);
+            window.draw(dropFullscreen); 
+            window.draw(dropMenu);
+            window.draw(dropQuit); // Rysowanie wyjścia
         }
     }
     else if (currentState == GameState::EnterName) {

@@ -39,19 +39,18 @@ sf::Texture texNumbers[8];
 sf::Font font;
 std::vector<ScoreEntry> leaderboards[4];
 
-// --- ELEMENTY UI ---
+// --- ELEMENTY UI (tylko jedna kopia!) ---
 sf::Text titleMenu, btnBeginner, btnIntermediate, btnExpert, btnCustom;
 sf::Text lblCols, valCol, lblRows, valRow, lblMines, valMine;
-sf::Text btnSkinClassic, btnSkinModern, btnSkinGreen, btnStart, btnShowLeaderboard;
+sf::Text btnSkinClassic, btnSkinModern, btnSkinGreen, btnStart, btnShowLeaderboard, btnQuit;
 sf::Text msgEnd, txtTimer, txtMines, btnOptions;
-sf::Text dropRestart, dropUndo, dropSkin, dropFullscreen, dropMenu;
+sf::Text dropRestart, dropUndo, dropSkin, dropFullscreen, dropMenu, dropQuit;
 sf::RectangleShape dropdownBg, gameBg;
 sf::Text txtTitle, txtSubtitle, btnReturnMenu;
 
 sf::Text lblOptionsTitle;
 sf::Text btnOptOpening, btnOptQuestion, btnOptChording, btnOptRemaining, btnOptUndo, btnOptHints;
 
-// NOWOŚĆ
 sf::Text tooltipText;
 sf::RectangleShape tooltipBg;
 bool showTooltip = false;

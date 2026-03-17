@@ -59,3 +59,12 @@ extern sf::Text btnOptOpening, btnOptQuestion, btnOptChording, btnOptRemaining, 
 extern sf::Text tooltipText;
 extern sf::RectangleShape tooltipBg;
 extern bool showTooltip;
+
+// --- ELEMENTY UI ---
+extern sf::Text titleMenu, btnBeginner, btnIntermediate, btnExpert, btnCustom;
+extern sf::Text lblCols, valCol, lblRows, valRow, lblMines, valMine;
+extern sf::Text btnSkinClassic, btnSkinModern, btnSkinGreen, btnStart, btnShowLeaderboard, btnQuit; // DODANO btnQuit
+extern sf::Text msgEnd, txtTimer, txtMines, btnOptions;
+extern sf::Text dropRestart, dropUndo, dropSkin, dropFullscreen, dropMenu, dropQuit; // DODANO dropQuit
+extern sf::RectangleShape dropdownBg, gameBg;
+extern sf::Text txtTitle, txtSubtitle, btnReturnMenu;

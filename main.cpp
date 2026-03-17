@@ -34,26 +34,39 @@ int main() {
             if (event.type == sf::Event::Closed) window.close();
             if (event.type == sf::Event::Resized) adjustView(window);
             
-            // Klawisz F11 globalnie
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F11) toggleFullscreen(window);
-
-            // NOWOŚĆ: Klawisz H (Podpowiedź)
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::H) {
-                if (currentState == GameState::Playing && optHints && !isDropdownOpen) {
-                    if (mousePos.x >= offsetX && mousePos.x < offsetX + boardWidth && mousePos.y >= TOP_UI_HEIGHT) {
-                        int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
-                        int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
-                        if (isValid(x, y) && !grid[getIndex(x, y)].isRevealed) {
-                            if (!isFirstClick) { // Podpowiedź ma sens dopiero po rozpoczęciu generacji
-                                saveState();
-                                if (grid[getIndex(x, y)].isMine) {
-                                    if (grid[getIndex(x, y)].flagState != 1) {
-                                        grid[getIndex(x, y)].flagState = 1; 
-                                        flagsPlaced++;
+            // NOWOŚĆ: Logika klawiszy ESC i F11
+            if (event.type == sf::Event::KeyPressed) {
+                if (event.key.code == sf::Keyboard::F11) {
+                    toggleFullscreen(window);
+                }
+                if (event.key.code == sf::Keyboard::Escape) {
+                    // W menu ESC zamyka grę
+                    if (currentState == GameState::Menu) {
+                        window.close();
+                    } 
+                    // W trakcie gry ESC pauzuje (otwiera/zamyka opcje)
+                    else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
+                        isDropdownOpen = !isDropdownOpen;
+                    }
+                }
+                // Podpowiedź pod H
+                if (event.key.code == sf::Keyboard::H) {
+                    if (currentState == GameState::Playing && optHints && !isDropdownOpen) {
+                        if (mousePos.x >= offsetX && mousePos.x < offsetX + boardWidth && mousePos.y >= TOP_UI_HEIGHT) {
+                            int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
+                            int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
+                            if (isValid(x, y) && !grid[getIndex(x, y)].isRevealed) {
+                                if (!isFirstClick) { 
+                                    saveState();
+                                    if (grid[getIndex(x, y)].isMine) {
+                                        if (grid[getIndex(x, y)].flagState != 1) {
+                                            grid[getIndex(x, y)].flagState = 1; 
+                                            flagsPlaced++;
+                                        }
+                                    } else {
+                                        revealCell(x, y);
+                                        checkVictory();
                                     }
-                                } else {
-                                    revealCell(x, y);
-                                    checkVictory();
                                 }
                             }
                         }
@@ -98,7 +111,6 @@ int main() {
                         else if (btnExpert.getGlobalBounds().contains(mousePos)) selectedDifficulty = 2;
                         else if (btnCustom.getGlobalBounds().contains(mousePos)) selectedDifficulty = 3;
                         
-                        // Zmiana opcji toggle
                         if (btnOptOpening.getGlobalBounds().contains(mousePos)) optOpeningMove = !optOpeningMove;
                         if (btnOptQuestion.getGlobalBounds().contains(mousePos)) optQuestionMarks = !optQuestionMarks;
                         if (btnOptChording.getGlobalBounds().contains(mousePos)) optChording = !optChording;
@@ -116,8 +128,9 @@ int main() {
                         else if (btnSkinModern.getGlobalBounds().contains(mousePos)) { activeSkin = "modern"; loadTextures(activeSkin); }
                         else if (btnSkinGreen.getGlobalBounds().contains(mousePos)) { activeSkin = "green"; loadTextures(activeSkin); }
                         else if (btnShowLeaderboard.getGlobalBounds().contains(mousePos)) currentState = GameState::Leaderboard;
+                        // NOWOŚĆ: Wyjście z menu
+                        else if (btnQuit.getGlobalBounds().contains(mousePos)) window.close(); 
                         else if (btnStart.getGlobalBounds().contains(mousePos)) {
-                            
                             if (selectedDifficulty == 0) { columns = 8; rows = 8; minesCount = 10; }
                             else if (selectedDifficulty == 1) { columns = 16; rows = 16; minesCount = 40; }
                             else if (selectedDifficulty == 2) { columns = 30; rows = 16; minesCount = 99; }
@@ -126,7 +139,7 @@ int main() {
                             unsigned int w = std::max((unsigned int)MIN_WINDOW_WIDTH, (unsigned int)(columns * TILE_SIZE)); 
                             unsigned int h = rows * TILE_SIZE + TOP_UI_HEIGHT;
                             applyWindowSize(window, w, h);
-                            initGame(); // Inicjalizuje pustą planszę
+                            initGame(); 
                         }
                     }
                     else if (currentState == GameState::Playing) {
@@ -138,10 +151,12 @@ int main() {
                                 currentState = GameState::Menu;
                                 applyWindowSize(window, 750, 550); 
                             }
+                            // NOWOŚĆ: Wyjście z gry w dropdownie
+                            else if (dropQuit.getGlobalBounds().contains(mousePos)) window.close();
+                            
                             isDropdownOpen = false; 
                         }
                         else if (btnOptions.getGlobalBounds().contains(mousePos)) isDropdownOpen = true;
-                        // NOWOŚĆ: Kliknięcie w licznik bomb -> Otwórz Pozostałe
                         else if (optOpenRemaining && txtMines.getGlobalBounds().contains(mousePos)) {
                             openRemainingSafeCells();
                         }
@@ -151,13 +166,12 @@ int main() {
                                 int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
                                 if (isValid(x, y)) {
                                     if (!grid[getIndex(x, y)].isRevealed && grid[getIndex(x, y)].flagState == 0) {
-                                        // Pierwsze kliknięcie GENERUJE BOMBY
                                         if (isFirstClick) {
                                             generateMines(x, y);
                                             isFirstClick = false;
                                             gameClock.restart();
                                         }
-                                        saveState(); // Zapisujemy stan gry do ew. Undo
+                                        saveState(); 
                                         
                                         if (grid[getIndex(x, y)].isMine) {
                                             currentState = GameState::GameOver;
@@ -167,7 +181,6 @@ int main() {
                                             checkVictory();
                                         }
                                     }
-                                    // Kliknięcie lewym w odkryte pole = Chording (Bezpieczna Okolica)
                                     else if (grid[getIndex(x, y)].isRevealed && optChording) {
                                         chordCell(x, y);
                                     }
@@ -180,11 +193,14 @@ int main() {
                             if (dropRestart.getGlobalBounds().contains(mousePos)) initGame();
                             else if (dropSkin.getGlobalBounds().contains(mousePos)) cycleSkin();
                             else if (dropFullscreen.getGlobalBounds().contains(mousePos)) toggleFullscreen(window);
-                            else if (optUndo && dropUndo.getGlobalBounds().contains(mousePos)) undoState(); // COFANIE!
+                            else if (optUndo && dropUndo.getGlobalBounds().contains(mousePos)) undoState(); 
                             else if (dropMenu.getGlobalBounds().contains(mousePos)) {
                                 currentState = GameState::Menu;
                                 applyWindowSize(window, 750, 550);
                             }
+                            // NOWOŚĆ: Wyjście w GameOver
+                            else if (dropQuit.getGlobalBounds().contains(mousePos)) window.close();
+                            
                             isDropdownOpen = false;
                         }
                         else if (btnOptions.getGlobalBounds().contains(mousePos)) isDropdownOpen = true;
@@ -203,14 +219,13 @@ int main() {
                         int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
                         if (isValid(x, y) && !grid[getIndex(x, y)].isRevealed) {
                             int idx = getIndex(x, y);
-                            saveState(); // Do undo flagowania
+                            saveState(); 
 
-                            // PĘTLA FLAGOWANIA: 0 -> 1 -> 2(pytajnik) -> 0
                             if (grid[idx].flagState == 0) {
                                 grid[idx].flagState = 1;
                                 flagsPlaced++;
                             } else if (grid[idx].flagState == 1) {
-                                flagsPlaced--; // Odejmujemy flagę, bo zmienia się w pytajnik/nic
+                                flagsPlaced--; 
                                 grid[idx].flagState = optQuestionMarks ? 2 : 0;
                             } else if (grid[idx].flagState == 2) {
                                 grid[idx].flagState = 0;
