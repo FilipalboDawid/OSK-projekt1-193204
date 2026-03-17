@@ -9,13 +9,11 @@ void styleButton(sf::Text& btn, bool isSelected, sf::Vector2f mousePos) {
     else btn.setFillColor(sf::Color(255, 255, 255));
 }
 
-// Zmienione na sf::String, by bezpiecznie łączyć polskie znaki z resztą tekstu
 sf::String getCheckbox(bool opt) { return opt ? L"[X] " : L"[ ] "; }
 
 void initUI() {
     titleMenu = sf::Text(L"USTAWIENIA GRY", font, 30); titleMenu.setPosition(20.0f, 20.0f);
     
-    // Klasyczne opcje (lewa kolumna)
     btnBeginner = sf::Text(L"[ Początkujący (8x8, 10 min) ]", font, 20);      btnBeginner.setPosition(20.0f, 70.0f);
     btnIntermediate = sf::Text(L"[ Zaawansowany (16x16, 40 min) ]", font, 20); btnIntermediate.setPosition(20.0f, 100.0f);
     btnExpert = sf::Text(L"[ Ekspert (30x16, 99 min) ]", font, 20);            btnExpert.setPosition(20.0f, 130.0f);
@@ -35,7 +33,6 @@ void initUI() {
     btnStart = sf::Text(L">>> START GRY <<<", font, 32);         btnStart.setPosition(20.0f, 380.0f);
     btnShowLeaderboard = sf::Text(L"[ TABELA WYNIKÓW ]", font, 20); btnShowLeaderboard.setPosition(420.0f, 390.0f);
 
-    // --- NOWE OPCJE (Prawa kolumna) ---
     float rightColX = 380.0f;
     lblOptionsTitle = sf::Text(L"DODATKOWE USTAWIENIA", font, 22); lblOptionsTitle.setPosition(rightColX, 70.0f);
     lblOptionsTitle.setFillColor(sf::Color::Yellow);
@@ -47,7 +44,6 @@ void initUI() {
     btnOptUndo = sf::Text(getCheckbox(optUndo) + sf::String(L"Rozbrój (Cofanie)"), font, 18);            btnOptUndo.setPosition(rightColX, 230.0f);
     btnOptHints = sf::Text(getCheckbox(optHints) + sf::String(L"Podpowiedź (Kl. H)"), font, 18);         btnOptHints.setPosition(rightColX, 260.0f);
 
-    // --- ELEMENTY W GRZE ---
     msgEnd = sf::Text("", font, 20); 
     txtTimer = sf::Text("", font, 20);
     txtMines = sf::Text("", font, 20);
@@ -67,7 +63,6 @@ void initUI() {
     txtSubtitle = sf::Text("", font, 24); txtSubtitle.setPosition(50.0f, 120.0f);
     btnReturnMenu = sf::Text(L"[ Wróć do Menu ]", font, 24); btnReturnMenu.setPosition(50.0f, 480.0f);
 
-    // Dymki
     tooltipText = sf::Text("", font, 14);
     tooltipText.setFillColor(sf::Color::White);
     tooltipBg.setFillColor(sf::Color(20, 20, 20, 240)); 
@@ -233,14 +228,28 @@ void renderUI(sf::RenderWindow& window, float offsetX) {
         txtMines.setPosition(logicalW - 120.0f, 12.0f);
         window.draw(txtMines);
 
+        // --- POPRAWKA EKRANU KOŃCA GRY ---
         if (currentState == GameState::GameOver) {
-            sf::RectangleShape overlay(sf::Vector2f(logicalW, 60.0f));
+            msgEnd.setCharacterSize(18); // Zmniejszamy minimalnie czcionkę
+            
+            // Przełamanie na dwie linijki za pomocą \n
+            if (optUndo) {
+                msgEnd.setString(L"PRZEGRANA! Kliknij by zagrać\nlub wejdź w Opcje by cofnąć");
+            } else {
+                msgEnd.setString(L"PRZEGRANA! Kliknij by zagrać");
+            }
+
+            sf::FloatRect bounds = msgEnd.getLocalBounds();
+            float overlayHeight = bounds.height + 40.0f; // Dynamiczna wysokość czarnego paska
+
+            sf::RectangleShape overlay(sf::Vector2f(logicalW, overlayHeight));
             overlay.setFillColor(sf::Color(0, 0, 0, 200));
-            overlay.setPosition(0.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 30.0f);
+            // Centrowanie ciemnego paska w pionie
+            overlay.setPosition(0.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - overlayHeight / 2.0f);
             window.draw(overlay);
 
-            msgEnd.setString(sf::String(L"PRZEGRANA! Kliknij by zagrać") + (optUndo ? sf::String(L" lub wejdź w Opcje by cofnąć") : sf::String(L"")));
-            msgEnd.setPosition(logicalW / 2.0f - msgEnd.getGlobalBounds().width / 2.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 15.0f);
+            // Centrowanie tekstu idealnie na środku planszy
+            msgEnd.setPosition(logicalW / 2.0f - bounds.width / 2.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - bounds.height / 2.0f - 5.0f);
             window.draw(msgEnd);
         }
 
