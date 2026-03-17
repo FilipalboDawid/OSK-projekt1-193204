@@ -5,12 +5,15 @@
 #include "ui.hpp"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(logicalW, logicalH), "Minesweeper C++", sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode(logicalW, logicalH), "Saper", sf::Style::Default);
     window.setFramerateLimit(60);
 
     // NOWOŚĆ: Ładowanie 8-bitowej czcionki
     if (!font.loadFromFile("assets/pixel.ttf")) {
-        font.loadFromFile("C:/Windows/Fonts/arial.ttf"); // Fallback w razie błędu
+        // Awaryjne ładowanie dla Linuxa (Zorin/Ubuntu), a w ostateczności dla Windowsa
+        if (!font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")) {
+            font.loadFromFile("C:/Windows/Fonts/arial.ttf"); 
+        }
     }
 
     loadTextures(activeSkin);

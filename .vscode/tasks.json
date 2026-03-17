@@ -5,18 +5,14 @@
             "label": "C/C++: g++.exe build active file",
             "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
             "args": [
-                "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "${workspaceFolder}\\src\\*.cpp",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "-lraylib",
-                "-lgdi32",
-                "-lwinmm",
-                "-std=c++17",
+                "${workspaceFolder}\\saper.exe",
                 "-lsfml-graphics",
                 "-lsfml-window",
-                "-lsfml-system"
+                "-lsfml-system",
+                "-mwindows"
             ],
             "options": {
                 "cwd": "${fileDirname}"
