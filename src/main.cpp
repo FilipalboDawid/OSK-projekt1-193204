@@ -5,12 +5,10 @@
 #include "ui.hpp"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(logicalW, logicalH), "Saper", sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode(logicalW, logicalH), "Minesweeper C++", sf::Style::Default);
     window.setFramerateLimit(60);
 
-    // NOWOŚĆ: Ładowanie 8-bitowej czcionki
     if (!font.loadFromFile("assets/pixel.ttf")) {
-        // Awaryjne ładowanie dla Linuxa (Zorin/Ubuntu), a w ostateczności dla Windowsa
         if (!font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")) {
             font.loadFromFile("C:/Windows/Fonts/arial.ttf"); 
         }
@@ -28,7 +26,7 @@ int main() {
         float offsetX = (logicalW > boardWidth) ? (logicalW - boardWidth) / 2.0f : 0.0f;
 
         if (currentState == GameState::Playing && !isFirstClick) {
-            elapsedTime = static_cast<int>(gameClock.getElapsedTime().asSeconds());
+            elapsedTime = savedTime + static_cast<int>(gameClock.getElapsedTime().asSeconds());
         }
 
         updateUI(mousePos, offsetX); 
@@ -42,9 +40,18 @@ int main() {
                 if (event.key.code == sf::Keyboard::F11) toggleFullscreen(window);
                 if (event.key.code == sf::Keyboard::Escape) {
                     if (currentState == GameState::Menu) window.close();
-                    else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
+                    else if (currentState == GameState::Playing || currentState == GameState::GameOver || currentState == GameState::Paused) {
                         isDropdownOpen = !isDropdownOpen;
                         isSkinDropdownOpen = false; 
+                    }
+                }
+                if (event.key.code == sf::Keyboard::P) {
+                    if (currentState == GameState::Playing && !isFirstClick) {
+                        currentState = GameState::Paused;
+                        savedTime = elapsedTime; 
+                    } else if (currentState == GameState::Paused) {
+                        currentState = GameState::Playing;
+                        gameClock.restart(); 
                     }
                 }
                 if (event.key.code == sf::Keyboard::H) {
@@ -136,10 +143,11 @@ int main() {
                                 unsigned int h = rows * TILE_SIZE + TOP_UI_HEIGHT;
                                 applyWindowSize(window, w, h);
                                 initGame(); 
+                                savedTime = 0; 
                             }
                         }
                     }
-                    else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
+                    else if (currentState == GameState::Playing || currentState == GameState::GameOver || currentState == GameState::Paused) {
                         if (isDropdownOpen) {
                             bool handled = true;
 
@@ -148,7 +156,7 @@ int main() {
                                 else if (optSkinModern.getGlobalBounds().contains(mousePos)) setSkin("modern");
                                 else if (optSkinGreen.getGlobalBounds().contains(mousePos)) setSkin("green");
                             }
-                            else if (dropRestart.getGlobalBounds().contains(mousePos)) initGame();
+                            else if (dropRestart.getGlobalBounds().contains(mousePos)) { initGame(); savedTime = 0; }
                             else if (dropFullscreen.getGlobalBounds().contains(mousePos)) toggleFullscreen(window);
                             else if (currentState == GameState::GameOver && optUndo && dropUndo.getGlobalBounds().contains(mousePos)) undoState();
                             else if (dropMenu.getGlobalBounds().contains(mousePos)) {
@@ -165,6 +173,15 @@ int main() {
                                 isSkinDropdownOpen = false;
                             }
                         }
+                        else if (btnPause.getGlobalBounds().contains(mousePos)) {
+                            if (currentState == GameState::Playing && !isFirstClick) {
+                                currentState = GameState::Paused;
+                                savedTime = elapsedTime;
+                            } else if (currentState == GameState::Paused) {
+                                currentState = GameState::Playing;
+                                gameClock.restart();
+                            }
+                        }
                         else if (btnOptions.getGlobalBounds().contains(mousePos)) isDropdownOpen = true;
                         else if (currentState == GameState::Playing && optOpenRemaining && txtMines.getGlobalBounds().contains(mousePos)) {
                             openRemainingSafeCells();
@@ -172,13 +189,14 @@ int main() {
                         else if (currentState == GameState::Playing || (currentState == GameState::GameOver && !btnOptions.getGlobalBounds().contains(mousePos))) {
                             if (currentState == GameState::GameOver) {
                                 initGame();
+                                savedTime = 0;
                             } else {
                                 if (mousePos.x >= offsetX && mousePos.x < offsetX + boardWidth && mousePos.y >= TOP_UI_HEIGHT) {
                                     int x = static_cast<int>(mousePos.x - offsetX) / TILE_SIZE;
                                     int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
                                     if (isValid(x, y)) {
                                         if (!grid[getIndex(x, y)].isRevealed && grid[getIndex(x, y)].flagState == 0) {
-                                            if (isFirstClick) { generateMines(x, y); isFirstClick = false; gameClock.restart(); }
+                                            if (isFirstClick) { generateMines(x, y); isFirstClick = false; gameClock.restart(); savedTime = 0; }
                                             saveState(); 
                                             if (grid[getIndex(x, y)].isMine) { currentState = GameState::GameOver; revealAllMines(); } 
                                             else { revealCell(x, y); checkVictory(); }
@@ -221,7 +239,6 @@ int main() {
             }
         }
 
-        // Zmiana argumentów renderUI!
         renderUI(window, offsetX, mousePos); 
         window.display();
     }

@@ -7,6 +7,7 @@ int flagsPlaced = 0;
 bool isFirstClick = true;
 sf::Clock gameClock;
 int elapsedTime = 0;
+int savedTime = 0; 
 
 float logicalW = 750.0f; 
 float logicalH = 550.0f;
@@ -40,7 +41,6 @@ sf::Texture texNumbers[8];
 sf::Font font;
 std::vector<ScoreEntry> leaderboards[4];
 
-// --- ELEMENTY UI ---
 sf::Text titleMenu, btnBeginner, btnIntermediate, btnExpert, btnCustom;
 sf::Text lblCols, valCol, lblRows, valRow, lblMines, valMine;
 sf::Text btnStart, btnShowLeaderboard, btnQuit;
@@ -58,4 +58,6 @@ bool showTooltip = false;
 
 sf::Text btnSkinSelect, optSkinClassic, optSkinModern, optSkinGreen;
 sf::RectangleShape bgSkinDropdown;
-sf::Text btnClearLeaderboard; // DODANO: Przycisk czyszczenia
+sf::Text btnClearLeaderboard;
+
+sf::Text msgPause, btnPause;

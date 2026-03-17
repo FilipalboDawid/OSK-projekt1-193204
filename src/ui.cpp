@@ -3,7 +3,6 @@
 #include "functions.hpp"
 #include <algorithm>
 
-// --- NOWY SYSTEM RYSOWANIA 8-BITOWYCH PRZYCISKÓW ---
 void drawRetroButton(sf::RenderWindow& window, sf::Text& text, sf::Vector2f mousePos, bool isSelected = false, int style = 0) {
     sf::FloatRect bounds = text.getGlobalBounds();
     bool isHovered = bounds.contains(mousePos);
@@ -82,7 +81,6 @@ void initUI() {
     titleMenu = sf::Text(L"USTAWIENIA GRY", font, 36); titleMenu.setPosition(20.0f, 20.0f);
     titleMenu.setFillColor(sf::Color::Yellow);
     
-    // LEWA KOLUMNA (Trudność + główne przyciski)
     btnBeginner = sf::Text(L"  Początkujący (8x8)  ", font, 20);      btnBeginner.setPosition(20.0f, 80.0f);
     btnIntermediate = sf::Text(L"  Zaawansowany (16x16)  ", font, 20); btnIntermediate.setPosition(20.0f, 120.0f);
     btnExpert = sf::Text(L"  Ekspert (30x16)  ", font, 20);            btnExpert.setPosition(20.0f, 160.0f);
@@ -95,12 +93,12 @@ void initUI() {
     lblMines = sf::Text(L"Miny (max A*B/3):", font, 18); lblMines.setPosition(50.0f, 300.0f);
     valMine = sf::Text("15", font, 20);                  valMine.setPosition(250.0f, 298.0f);
 
-    // Przeniesione na dół po lewej, by było wygodniej
-    btnStart = sf::Text(L"  >>> START GRY <<<  ", font, 26);    btnStart.setPosition(20.0f, 360.0f);
-    btnShowLeaderboard = sf::Text(L"  Tabela Wyników  ", font, 20); btnShowLeaderboard.setPosition(20.0f, 420.0f);
+    btnSkinSelect = sf::Text(L"  Skórka: Classic V  ", font, 20); btnSkinSelect.setPosition(20.0f, 350.0f);
+    
+    btnStart = sf::Text(L"  >>> START GRY <<<  ", font, 26);    btnStart.setPosition(20.0f, 410.0f);
     btnQuit = sf::Text(L"  Wyjdź do Pulpitu  ", font, 20);      btnQuit.setPosition(20.0f, 480.0f);
+    btnShowLeaderboard = sf::Text(L"  Tabela Wyników  ", font, 20); btnShowLeaderboard.setPosition(420.0f, 410.0f);
 
-    // PRAWA KOLUMNA (Opcje + Skórki)
     float rightColX = 380.0f;
     lblOptionsTitle = sf::Text(L"DODATKOWE USTAWIENIA", font, 22); lblOptionsTitle.setPosition(rightColX, 80.0f);
     lblOptionsTitle.setFillColor(sf::Color::Yellow);
@@ -112,15 +110,15 @@ void initUI() {
     btnOptUndo = sf::Text(getCheckbox(optUndo) + sf::String(L"Rozbrój (Cofanie)  "), font, 18);            btnOptUndo.setPosition(rightColX, 280.0f);
     btnOptHints = sf::Text(getCheckbox(optHints) + sf::String(L"Podpowiedź (Kl. H)  "), font, 18);         btnOptHints.setPosition(rightColX, 320.0f);
 
-    // Lista skórek idealnie pod opcjami z prawej strony
-    btnSkinSelect = sf::Text(L"  Skórka: Classic V  ", font, 20); btnSkinSelect.setPosition(rightColX, 370.0f);
-    
     msgEnd = sf::Text("", font, 20); 
     txtTimer = sf::Text("", font, 20);
     txtMines = sf::Text("", font, 20);
     
-    // UI w trakcie gry
     btnOptions = sf::Text(L"  Opcje  ", font, 20); btnOptions.setPosition(10.0f, 12.0f);
+    
+    btnPause = sf::Text(L"  Pauza (P)  ", font, 20);
+    msgPause = sf::Text(L"GRA ZAPAUZOWANA", font, 36);
+    msgPause.setFillColor(sf::Color::Yellow);
 
     dropRestart = sf::Text(L"  Restart  ", font, 18);   
     dropUndo = sf::Text(L"  -> Cofnij Ruch  ", font, 18);
@@ -140,16 +138,13 @@ void initUI() {
     txtTitle = sf::Text("", font, 40); txtTitle.setPosition(50.0f, 50.0f);
     txtSubtitle = sf::Text("", font, 24); txtSubtitle.setPosition(50.0f, 120.0f);
     btnReturnMenu = sf::Text(L"  Wróć do Menu  ", font, 24); btnReturnMenu.setPosition(50.0f, 480.0f);
+    btnClearLeaderboard = sf::Text(L"  Wyczyść Wyniki  ", font, 24); btnClearLeaderboard.setPosition(450.0f, 480.0f);
 
     tooltipText = sf::Text("", font, 14);
     tooltipText.setFillColor(sf::Color::White);
     tooltipBg.setFillColor(sf::Color(20, 20, 20, 240)); 
     tooltipBg.setOutlineThickness(1.0f);
     tooltipBg.setOutlineColor(sf::Color::Yellow);
-
-    // DODANO: Inicjalizacja przycisku czyszczenia
-    btnClearLeaderboard = sf::Text(L"  Wyczyść Wyniki  ", font, 24); 
-    btnClearLeaderboard.setPosition(450.0f, 480.0f); // Ustawiony po prawej stronie na dole
 }
 
 void updateUI(sf::Vector2f mousePos, float offsetX) {
@@ -159,13 +154,11 @@ void updateUI(sf::Vector2f mousePos, float offsetX) {
     btnSkinSelect.setString(L"  Skórka: " + skinName + L" V  ");
 
     if (currentState == GameState::Menu) {
-        // Pozycjonowanie listy w Menu Głównym na sztywno obok
-        btnSkinSelect.setPosition(380.0f, 370.0f);
-        bgSkinDropdown.setPosition(380.0f, 405.0f);
-        bgSkinDropdown.setSize(sf::Vector2f(200.0f, 110.0f));
-        optSkinClassic.setPosition(385.0f, 415.0f);
-        optSkinModern.setPosition(385.0f, 445.0f);
-        optSkinGreen.setPosition(385.0f, 475.0f);
+        bgSkinDropdown.setPosition(20.0f, 380.0f);
+        bgSkinDropdown.setSize(sf::Vector2f(180.0f, 110.0f));
+        optSkinClassic.setPosition(25.0f, 390.0f);
+        optSkinModern.setPosition(25.0f, 420.0f);
+        optSkinGreen.setPosition(25.0f, 450.0f);
 
         valCol.setString(strCustomCols + (activeInputField == 1 ? "_" : ""));
         valRow.setString(strCustomRows + (activeInputField == 2 ? "_" : ""));
@@ -209,7 +202,9 @@ void updateUI(sf::Vector2f mousePos, float offsetX) {
         }
 
     } 
-    else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
+    else if (currentState == GameState::Playing || currentState == GameState::GameOver || currentState == GameState::Paused) {
+        
+        btnPause.setPosition(105.0f, 12.0f); // Naprawiona pozycja
         
         dropRestart.setPosition(15.0f, TOP_UI_HEIGHT + 15.0f);
         int optYOffset = 55;
@@ -286,25 +281,37 @@ void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
             drawRetroButton(window, optSkinGreen, mousePos, activeSkin == "green");
         }
     } 
-    else if (currentState == GameState::Playing || currentState == GameState::GameOver) {
-        for (int y = 0; y < rows; ++y) {
-            for (int x = 0; x < columns; ++x) {
-                Cell cell = grid[getIndex(x, y)];
-                const sf::Texture* currentTex = &texHidden;
-                
-                if (!cell.isRevealed) {
-                    if (cell.flagState == 1) currentTex = &texFlag;
-                    else if (cell.flagState == 2) currentTex = &texQuestion;
-                } else {
-                    if (cell.isMine) currentTex = &texMine;
-                    else if (cell.adjacentMines == 0) currentTex = &texEmpty;
-                    else currentTex = &texNumbers[cell.adjacentMines - 1];
-                }
+    else if (currentState == GameState::Playing || currentState == GameState::GameOver || currentState == GameState::Paused) {
+        
+        if (currentState == GameState::Paused) {
+            sf::RectangleShape pauseOverlay(sf::Vector2f(columns * TILE_SIZE, rows * TILE_SIZE));
+            pauseOverlay.setPosition(offsetX, TOP_UI_HEIGHT);
+            pauseOverlay.setFillColor(sf::Color(30, 30, 30));
+            window.draw(pauseOverlay);
+            
+            sf::FloatRect bounds = msgPause.getLocalBounds();
+            msgPause.setPosition(offsetX + (columns * TILE_SIZE) / 2.0f - bounds.width / 2.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - bounds.height / 2.0f);
+            window.draw(msgPause);
+        } else {
+            for (int y = 0; y < rows; ++y) {
+                for (int x = 0; x < columns; ++x) {
+                    Cell cell = grid[getIndex(x, y)];
+                    const sf::Texture* currentTex = &texHidden;
+                    
+                    if (!cell.isRevealed) {
+                        if (cell.flagState == 1) currentTex = &texFlag;
+                        else if (cell.flagState == 2) currentTex = &texQuestion;
+                    } else {
+                        if (cell.isMine) currentTex = &texMine;
+                        else if (cell.adjacentMines == 0) currentTex = &texEmpty;
+                        else currentTex = &texNumbers[cell.adjacentMines - 1];
+                    }
 
-                sf::Sprite sprite;
-                sprite.setTexture(*currentTex);
-                sprite.setPosition(static_cast<float>(x * TILE_SIZE) + offsetX, static_cast<float>(y * TILE_SIZE + TOP_UI_HEIGHT));
-                window.draw(sprite);
+                    sf::Sprite sprite;
+                    sprite.setTexture(*currentTex);
+                    sprite.setPosition(static_cast<float>(x * TILE_SIZE) + offsetX, static_cast<float>(y * TILE_SIZE + TOP_UI_HEIGHT));
+                    window.draw(sprite);
+                }
             }
         }
 
@@ -313,6 +320,7 @@ void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
         window.draw(topBar);
         
         drawRetroButton(window, btnOptions, mousePos, isDropdownOpen);
+        drawRetroButton(window, btnPause, mousePos, currentState == GameState::Paused, currentState == GameState::Paused ? 1 : 0);
 
         txtTimer.setString(sf::String(L"Czas: ") + std::to_string(elapsedTime) + sf::String(L"s"));
         txtTimer.setPosition(logicalW / 2.0f - 40.0f, 12.0f);
@@ -383,7 +391,6 @@ void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
             sf::Text scoresList(scoresText, font, 16); scoresList.setPosition(50.0f, 150.0f + i * 90.0f); window.draw(scoresList);
         }
         drawRetroButton(window, btnReturnMenu, mousePos);
-        
-        drawRetroButton(window, btnClearLeaderboard, mousePos, false, 2);
+        drawRetroButton(window, btnClearLeaderboard, mousePos, false, 2); 
     }
 }

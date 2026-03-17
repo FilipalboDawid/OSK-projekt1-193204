@@ -5,7 +5,7 @@
 
 const int TILE_SIZE = 32;
 const int TOP_UI_HEIGHT = 50; 
-const int MIN_WINDOW_WIDTH = 400;
+const int MIN_WINDOW_WIDTH = 550;
 
 struct Cell {
     bool isMine = false;
@@ -19,9 +19,10 @@ struct ScoreEntry {
     int time;
 };
 
-enum class GameState { Menu, Playing, GameOver, Victory, EnterName, Leaderboard };
+enum class GameState { Menu, Playing, GameOver, Victory, EnterName, Leaderboard, Paused };
 
 extern int columns, rows, minesCount, flagsPlaced, elapsedTime;
+extern int savedTime; 
 extern bool isFirstClick, isFullscreen, isDropdownOpen, isSkinDropdownOpen; 
 extern float logicalW, logicalH;
 extern sf::Clock gameClock;
@@ -61,4 +62,6 @@ extern bool showTooltip;
 
 extern sf::Text btnSkinSelect, optSkinClassic, optSkinModern, optSkinGreen;
 extern sf::RectangleShape bgSkinDropdown;
-extern sf::Text btnClearLeaderboard; // DODANO: Przycisk czyszczenia
+extern sf::Text btnClearLeaderboard;
+
+extern sf::Text msgPause, btnPause;
