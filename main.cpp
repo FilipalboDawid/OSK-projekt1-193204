@@ -17,6 +17,11 @@ bool isFirstClick = true;
 sf::Clock gameClock;
 int elapsedTime = 0;
 
+// Logiczny rozmiar gry (niezależny od fizycznego rozmiaru okna na monitorze)
+float logicalW = 650.0f;
+float logicalH = 350.0f;
+bool isFullscreen = false;
+
 struct Cell {
     bool isMine = false;
     bool isRevealed = false;
@@ -30,7 +35,6 @@ std::vector<Cell> grid;
 GameState currentState = GameState::Menu;
 std::string activeSkin = "classic"; 
 
-// --- NOWOŚĆ: Zmienna sterująca otwarciem menu ---
 bool isDropdownOpen = false; 
 
 sf::Texture texHidden, texEmpty, texMine, texFlag;
@@ -55,6 +59,49 @@ bool loadTextures(const std::string& skinName) {
     return true;
 }
 
+// Funkcja dopasowująca widok (View) do rozmiaru okna, zachowując proporcje gry (czarne paski)
+void adjustView(sf::RenderWindow& window) {
+    float windowRatio = window.getSize().x / (float)window.getSize().y;
+    float viewRatio = logicalW / logicalH;
+    float sizeX = 1.0f;
+    float sizeY = 1.0f;
+    float posX = 0.0f;
+    float posY = 0.0f;
+
+    if (windowRatio >= viewRatio) {
+        sizeX = viewRatio / windowRatio;
+        posX = (1.0f - sizeX) / 2.0f;
+    } else {
+        sizeY = windowRatio / viewRatio;
+        posY = (1.0f - sizeY) / 2.0f;
+    }
+
+    sf::View view(sf::FloatRect(0.0f, 0.0f, logicalW, logicalH));
+    view.setViewport(sf::FloatRect(posX, posY, sizeX, sizeY));
+    window.setView(view);
+}
+
+// Funkcja zmieniająca tryb ekranu
+void toggleFullscreen(sf::RenderWindow& window) {
+    isFullscreen = !isFullscreen;
+    if (isFullscreen) {
+        window.create(sf::VideoMode::getDesktopMode(), "Minesweeper C++", sf::Style::Fullscreen);
+    } else {
+        window.create(sf::VideoMode(logicalW, logicalH), "Minesweeper C++", sf::Style::Default);
+    }
+    window.setFramerateLimit(60);
+    adjustView(window);
+}
+
+void applyWindowSize(sf::RenderWindow& window, unsigned int w, unsigned int h) {
+    logicalW = static_cast<float>(w);
+    logicalH = static_cast<float>(h);
+    if (!isFullscreen) {
+        window.setSize(sf::Vector2u(w, h));
+    }
+    adjustView(window);
+}
+
 void initGame() {
     grid.assign(columns * rows, Cell());
     currentState = GameState::Playing;
@@ -62,7 +109,7 @@ void initGame() {
     flagsPlaced = 0;
     isFirstClick = true;
     elapsedTime = 0;
-    isDropdownOpen = false; // Zamykamy menu przy restarcie
+    isDropdownOpen = false; 
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -124,11 +171,6 @@ void revealAllMines() {
     }
 }
 
-void applyWindowSize(sf::RenderWindow& window, unsigned int w, unsigned int h) {
-    window.setSize(sf::Vector2u(w, h));
-    window.setView(sf::View(sf::FloatRect(0.0f, 0.0f, static_cast<float>(w), static_cast<float>(h))));
-}
-
 void cycleSkin() {
     if (activeSkin == "classic") activeSkin = "modern";
     else if (activeSkin == "modern") activeSkin = "green";
@@ -137,7 +179,7 @@ void cycleSkin() {
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(650, 350), "Minesweeper C++");
+    sf::RenderWindow window(sf::VideoMode(logicalW, logicalH), "Minesweeper C++", sf::Style::Default);
     window.setFramerateLimit(60);
 
     if (!font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")) {
@@ -155,23 +197,25 @@ int main() {
     sf::Text btnSkinGreen("[ Skorka: Green ]", font, 20);       btnSkinGreen.setPosition(420.0f, 150.0f);
     sf::Text btnStart(">>> START GRY <<<", font, 32); btnStart.setPosition(20.0f, 250.0f);
 
-    sf::Text msgEnd("", font, 28);
+    sf::Text msgEnd("", font, 20); 
     sf::Text txtTimer("", font, 20);
     sf::Text txtMines("", font, 20);
 
-    // --- ELEMENTY DROPDOWN MENU ---
     sf::Text btnOptions("[ Opcje ]", font, 20); 
     btnOptions.setPosition(10.0f, 12.0f);
 
-    // Pozycje na rozwijanej liście
     sf::Text dropRestart("Restart", font, 18);   dropRestart.setPosition(15.0f, TOP_UI_HEIGHT + 10.0f);
     sf::Text dropSkin("Zmien Skorke", font, 18); dropSkin.setPosition(15.0f, TOP_UI_HEIGHT + 40.0f);
-    sf::Text dropMenu("Wroc do Menu", font, 18); dropMenu.setPosition(15.0f, TOP_UI_HEIGHT + 70.0f);
+    sf::Text dropFullscreen("Pelny Ekran (F11)", font, 18); dropFullscreen.setPosition(15.0f, TOP_UI_HEIGHT + 70.0f);
+    sf::Text dropMenu("Wroc do Menu", font, 18); dropMenu.setPosition(15.0f, TOP_UI_HEIGHT + 100.0f);
     
-    // Tło rozwijanej listy
-    sf::RectangleShape dropdownBg(sf::Vector2f(160.0f, 100.0f));
-    dropdownBg.setFillColor(sf::Color(50, 50, 50, 240)); // Lekko przezroczysty, ciemny szary
+    // Zwiększone tło, by pomieścić nowy przycisk F11
+    sf::RectangleShape dropdownBg(sf::Vector2f(200.0f, 130.0f));
+    dropdownBg.setFillColor(sf::Color(50, 50, 50, 240)); 
     dropdownBg.setPosition(10.0f, TOP_UI_HEIGHT);
+
+    // Tło gry (renderowane pod kafelkami, na nim opiera się logika letterboxingu)
+    sf::RectangleShape gameBg;
 
     auto styleButton = [](sf::Text& btn, bool isSelected, sf::Vector2f mousePos) {
         if (isSelected) btn.setFillColor(sf::Color(0, 255, 0));
@@ -180,8 +224,9 @@ int main() {
     };
 
     while (window.isOpen()) {
-        sf::Vector2i mousePosInt = sf::Mouse::getPosition(window);
-        sf::Vector2f mousePos(static_cast<float>(mousePosInt.x), static_cast<float>(mousePosInt.y));
+        // MAPOWANIE MYSZY: To najważniejsza linijka przy skalowaniu okna!
+        sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+        sf::Vector2f mousePos = window.mapPixelToCoords(pixelPos);
 
         if (currentState == GameState::Playing && !isFirstClick) {
             elapsedTime = static_cast<int>(gameClock.getElapsedTime().asSeconds());
@@ -196,12 +241,13 @@ int main() {
             styleButton(btnSkinGreen, activeSkin == "green", mousePos);
             styleButton(btnStart, false, mousePos);
         } else {
-            styleButton(btnOptions, isDropdownOpen, mousePos); // Przycisk świeci się na zielono, gdy lista jest otwarta
+            styleButton(btnOptions, isDropdownOpen, mousePos); 
             styleButton(msgEnd, false, mousePos);
             
             if (isDropdownOpen) {
                 styleButton(dropRestart, false, mousePos);
                 styleButton(dropSkin, false, mousePos);
+                styleButton(dropFullscreen, false, mousePos);
                 styleButton(dropMenu, false, mousePos);
             }
         }
@@ -209,6 +255,16 @@ int main() {
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
+
+            // Zdarzenie zmiany rozmiaru okna
+            if (event.type == sf::Event::Resized) {
+                adjustView(window);
+            }
+
+            // Klawisz F11 obsługiwany globalnie
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F11) {
+                toggleFullscreen(window);
+            }
 
             if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Left) {
@@ -221,33 +277,29 @@ int main() {
                         else if (btnSkinModern.getGlobalBounds().contains(mousePos)) { activeSkin = "modern"; loadTextures(activeSkin); }
                         else if (btnSkinGreen.getGlobalBounds().contains(mousePos)) { activeSkin = "green"; loadTextures(activeSkin); }
                         else if (btnStart.getGlobalBounds().contains(mousePos)) {
-                            unsigned int w = std::max(600, columns * TILE_SIZE);
+                            unsigned int w = columns * TILE_SIZE; 
                             unsigned int h = rows * TILE_SIZE + TOP_UI_HEIGHT;
                             applyWindowSize(window, w, h);
                             initGame();
                         }
                     }
                     else if (currentState == GameState::Playing) {
-                        // 1. Sprawdzanie kliknięć w Dropdown Menu
                         if (isDropdownOpen) {
                             if (dropRestart.getGlobalBounds().contains(mousePos)) initGame();
                             else if (dropSkin.getGlobalBounds().contains(mousePos)) cycleSkin();
+                            else if (dropFullscreen.getGlobalBounds().contains(mousePos)) toggleFullscreen(window);
                             else if (dropMenu.getGlobalBounds().contains(mousePos)) {
                                 currentState = GameState::Menu;
                                 applyWindowSize(window, 650, 350); 
                             }
-                            
-                            // Niezależnie w co kliknęliśmy (opcję czy planszę), zamykamy dropdown
                             isDropdownOpen = false; 
                         }
-                        // 2. Jeśli kliknięto główny przycisk opcji
                         else if (btnOptions.getGlobalBounds().contains(mousePos)) {
                             isDropdownOpen = true;
                         }
-                        // 3. Jeśli kliknięto w planszę (i menu było zamknięte)
                         else {
-                            int x = mousePosInt.x / TILE_SIZE;
-                            int y = (mousePosInt.y - TOP_UI_HEIGHT) / TILE_SIZE;
+                            int x = static_cast<int>(mousePos.x) / TILE_SIZE;
+                            int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
                             if (isValid(x, y) && !grid[getIndex(x, y)].isFlagged) {
                                 if (isFirstClick) {
                                     isFirstClick = false;
@@ -264,10 +316,10 @@ int main() {
                         }
                     }
                     else if (currentState == GameState::GameOver || currentState == GameState::Victory) {
-                        // Na ekranie końca gry zachowujemy działanie dropdownu
                         if (isDropdownOpen) {
                             if (dropRestart.getGlobalBounds().contains(mousePos)) initGame();
                             else if (dropSkin.getGlobalBounds().contains(mousePos)) cycleSkin();
+                            else if (dropFullscreen.getGlobalBounds().contains(mousePos)) toggleFullscreen(window);
                             else if (dropMenu.getGlobalBounds().contains(mousePos)) {
                                 currentState = GameState::Menu;
                                 applyWindowSize(window, 650, 350);
@@ -277,16 +329,14 @@ int main() {
                         else if (btnOptions.getGlobalBounds().contains(mousePos)) {
                             isDropdownOpen = true;
                         }
-                        // Kliknięcie w dowolne inne miejsce resetuje grę
                         else if (!btnOptions.getGlobalBounds().contains(mousePos)) {
                             initGame();
                         }
                     }
                 }
                 else if (event.mouseButton.button == sf::Mouse::Right && currentState == GameState::Playing && !isDropdownOpen) {
-                    // Prawy klik blokujemy, jeśli dropdown jest otwarty (żeby przez przypadek nie postawić flagi "pod" menu)
-                    int x = mousePosInt.x / TILE_SIZE;
-                    int y = (mousePosInt.y - TOP_UI_HEIGHT) / TILE_SIZE;
+                    int x = static_cast<int>(mousePos.x) / TILE_SIZE;
+                    int y = (static_cast<int>(mousePos.y) - TOP_UI_HEIGHT) / TILE_SIZE;
                     if (isValid(x, y) && !grid[getIndex(x, y)].isRevealed) {
                         grid[getIndex(x, y)].isFlagged = !grid[getIndex(x, y)].isFlagged;
                         if (grid[getIndex(x, y)].isFlagged) flagsPlaced++;
@@ -296,7 +346,13 @@ int main() {
             }
         }
 
-        window.clear(sf::Color(70, 70, 70));
+        // TŁO: Aby czarne paski letterboxingu działały, czyścimy okno na całkowicie czarno
+        window.clear(sf::Color::Black);
+
+        // A tu rysujemy właściwe szare tło dopasowane do aktualnej gry
+        gameBg.setSize(sf::Vector2f(logicalW, logicalH));
+        gameBg.setFillColor(sf::Color(70, 70, 70));
+        window.draw(gameBg);
 
         if (currentState == GameState::Menu) {
             window.draw(titleMenu);
@@ -325,20 +381,19 @@ int main() {
                 }
             }
 
-            float currentWidth = std::max(600.0f, columns * TILE_SIZE * 1.0f);
+            float currentWidth = columns * TILE_SIZE * 1.0f;
             sf::RectangleShape topBar(sf::Vector2f(currentWidth, TOP_UI_HEIGHT * 1.0f));
             topBar.setFillColor(sf::Color(40, 40, 40));
             window.draw(topBar);
             
-            // Zamiast trzech osobnych przycisków, rysujemy tylko jeden - "Opcje"
             window.draw(btnOptions); 
 
             txtTimer.setString("Czas: " + std::to_string(elapsedTime) + "s");
-            txtTimer.setPosition(currentWidth - 250.0f, 12.0f);
+            txtTimer.setPosition(currentWidth / 2.0f - 40.0f, 12.0f);
             window.draw(txtTimer);
 
             txtMines.setString("Miny: " + std::to_string(minesCount - flagsPlaced));
-            txtMines.setPosition(currentWidth - 110.0f, 12.0f);
+            txtMines.setPosition(currentWidth - 100.0f, 12.0f);
             window.draw(txtMines);
 
             if (currentState == GameState::GameOver || currentState == GameState::Victory) {
@@ -348,16 +403,15 @@ int main() {
                 window.draw(overlay);
 
                 msgEnd.setString(currentState == GameState::Victory ? "WYGRANA! Kliknij by zagrac" : "PRZEGRANA! Kliknij by zagrac");
-                msgEnd.setPosition(10.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 15.0f);
+                msgEnd.setPosition(currentWidth / 2.0f - msgEnd.getGlobalBounds().width / 2.0f, TOP_UI_HEIGHT + (rows * TILE_SIZE) / 2.0f - 15.0f);
                 window.draw(msgEnd);
             }
 
-            // --- Rysowanie Dropdownu (MUSI BYĆ NA SAMYM KOŃCU) ---
-            // Żeby menu rozwijało się "na wierzchu" planszy, musi być rysowane jako ostatnie.
             if (isDropdownOpen) {
                 window.draw(dropdownBg);
                 window.draw(dropRestart);
                 window.draw(dropSkin);
+                window.draw(dropFullscreen);
                 window.draw(dropMenu);
             }
         }
