@@ -61,3 +61,4 @@ extern bool showTooltip;
 
 extern sf::Text btnSkinSelect, optSkinClassic, optSkinModern, optSkinGreen;
 extern sf::RectangleShape bgSkinDropdown;
+extern sf::Text btnClearLeaderboard; // DODANO: Przycisk czyszczenia

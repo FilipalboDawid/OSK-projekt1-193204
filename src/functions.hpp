@@ -7,6 +7,7 @@ bool isValid(int x, int y);
 bool loadTextures(const std::string& skinName);
 void loadLeaderboard();
 void saveLeaderboard();
+void clearLeaderboard(); // DODANO
 void addScore(int diff, std::string name, int time);
 void adjustView(sf::RenderWindow& window);
 void toggleFullscreen(sf::RenderWindow& window);

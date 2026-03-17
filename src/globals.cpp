@@ -58,3 +58,4 @@ bool showTooltip = false;
 
 sf::Text btnSkinSelect, optSkinClassic, optSkinModern, optSkinGreen;
 sf::RectangleShape bgSkinDropdown;
+sf::Text btnClearLeaderboard; // DODANO: Przycisk czyszczenia

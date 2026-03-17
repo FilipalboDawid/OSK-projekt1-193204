@@ -261,3 +261,10 @@ void setSkin(const std::string& skinName) {
     activeSkin = skinName;
     loadTextures(activeSkin);
 }
+
+void clearLeaderboard() {
+    for (int i = 0; i < 4; ++i) {
+        leaderboards[i].clear();
+    }
+    saveLeaderboard(); // Zapisanie pustych tablic nadpisze plik txt
+}

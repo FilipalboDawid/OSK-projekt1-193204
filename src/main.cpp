@@ -194,6 +194,9 @@ int main() {
                             currentState = GameState::Menu;
                             applyWindowSize(window, 750, 550);
                         }
+                        if (currentState == GameState::Leaderboard && btnClearLeaderboard.getGlobalBounds().contains(mousePos)) {
+                            clearLeaderboard();
+                        }
                     }
                 }
                 else if (event.mouseButton.button == sf::Mouse::Right && currentState == GameState::Playing && !isDropdownOpen && !isSkinDropdownOpen) {

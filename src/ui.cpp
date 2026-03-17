@@ -146,6 +146,10 @@ void initUI() {
     tooltipBg.setFillColor(sf::Color(20, 20, 20, 240)); 
     tooltipBg.setOutlineThickness(1.0f);
     tooltipBg.setOutlineColor(sf::Color::Yellow);
+
+    // DODANO: Inicjalizacja przycisku czyszczenia
+    btnClearLeaderboard = sf::Text(L"  Wyczyść Wyniki  ", font, 24); 
+    btnClearLeaderboard.setPosition(450.0f, 480.0f); // Ustawiony po prawej stronie na dole
 }
 
 void updateUI(sf::Vector2f mousePos, float offsetX) {
@@ -379,5 +383,7 @@ void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
             sf::Text scoresList(scoresText, font, 16); scoresList.setPosition(50.0f, 150.0f + i * 90.0f); window.draw(scoresList);
         }
         drawRetroButton(window, btnReturnMenu, mousePos);
+        
+        drawRetroButton(window, btnClearLeaderboard, mousePos, false, 2);
     }
 }
