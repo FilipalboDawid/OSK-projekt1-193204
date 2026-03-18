@@ -381,15 +381,33 @@ void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
         txtTitle.setString(L"TABELA WYNIKÓW"); txtTitle.setFillColor(sf::Color::White); window.draw(txtTitle);
 
         sf::String diffNames[] = {L"Początkujący", L"Zaawansowany", L"Ekspert", L"Własna Plansza"};
+        
         for (int i = 0; i < 4; ++i) {
-            sf::Text header(diffNames[i], font, 20); header.setFillColor(sf::Color::Yellow); header.setPosition(50.0f, 120.0f + i * 90.0f); window.draw(header);
-            sf::String scoresText = L""; int limit = std::min((int)leaderboards[i].size(), 3); 
+            // Magia układu siatki (2 kolumny x 2 rzędy)
+            float posX = 50.0f + (i % 2) * 350.0f;  // Lewa kolumna: 50, Prawa kolumna: 400
+            float posY = 120.0f + (i / 2) * 160.0f; // Górny rząd: 120, Dolny rząd: 280
+
+            sf::Text header(diffNames[i], font, 20); 
+            header.setFillColor(sf::Color::Yellow); 
+            header.setPosition(posX, posY); 
+            window.draw(header);
+            
+            sf::String scoresText = L""; 
+            int limit = std::min((int)leaderboards[i].size(), 8); 
             if (limit == 0) scoresText = L"Brak wyników.";
+            
             for (int j = 0; j < limit; ++j) {
-                scoresText += std::to_string(j+1) + ". "; scoresText += leaderboards[i][j].name; scoresText += L" - "; scoresText += std::to_string(leaderboards[i][j].time) + "s\n";
+                scoresText += std::to_string(j+1) + ". "; 
+                scoresText += leaderboards[i][j].name; 
+                scoresText += L" - "; 
+                scoresText += std::to_string(leaderboards[i][j].time) + "s\n";
             }
-            sf::Text scoresList(scoresText, font, 16); scoresList.setPosition(50.0f, 150.0f + i * 90.0f); window.draw(scoresList);
+            
+            sf::Text scoresList(scoresText, font, 16); 
+            scoresList.setPosition(posX, posY + 35.0f); // Wyniki rysujemy lekko pod nagłówkiem
+            window.draw(scoresList);
         }
+        
         drawRetroButton(window, btnReturnMenu, mousePos);
         drawRetroButton(window, btnClearLeaderboard, mousePos, false, 2); 
     }
