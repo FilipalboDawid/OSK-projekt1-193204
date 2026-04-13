@@ -383,9 +383,8 @@ void renderUI(sf::RenderWindow& window, float offsetX, sf::Vector2f mousePos) {
         sf::String diffNames[] = {L"Początkujący", L"Zaawansowany", L"Ekspert", L"Własna Plansza"};
         
         for (int i = 0; i < 4; ++i) {
-            // Magia układu siatki (2 kolumny x 2 rzędy)
-            float posX = 50.0f + (i % 2) * 350.0f;  // Lewa kolumna: 50, Prawa kolumna: 400
-            float posY = 120.0f + (i / 2) * 160.0f; // Górny rząd: 120, Dolny rząd: 280
+            float posX = 50.0f + (i % 2) * 350.0f;
+            float posY = 120.0f + (i / 2) * 160.0f;
 
             sf::Text header(diffNames[i], font, 20); 
             header.setFillColor(sf::Color::Yellow); 
